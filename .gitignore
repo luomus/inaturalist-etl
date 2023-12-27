@@ -1,3 +1,8 @@
+
+secret_data.py
+app/privatedata/*
+app/store/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
