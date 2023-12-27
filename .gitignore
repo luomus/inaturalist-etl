@@ -1,7 +1,7 @@
 
 secret_data.py
 app/privatedata/*
-app/store/*
+app/store/data.json*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
