@@ -10,7 +10,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: my_python
+    image: my_inat_python
     container_name: inat_etl
     volumes:
       - ./app:/app
