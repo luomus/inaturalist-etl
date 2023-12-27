@@ -3,6 +3,10 @@ secret_data.py
 app/privatedata/*
 app/store/data.json*
 
+latest.tsv
+inaturalist-suomi-20*
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
