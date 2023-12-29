@@ -51,6 +51,7 @@ Example suffixes:
 * `&field:Host` # Observation field regardless of value
 * `&field:Host%20plant`
 * `&field:Isäntälaji`
+* `&field:Lintuatlas,%20pesimävarmuusindeksi`
 
 Use iNaturalist API documentation to see what kind of parameters you can give: https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
 
@@ -74,7 +75,7 @@ Use iNaturalist API documentation to see what kind of parameters you can give: h
 
 * Download private data from https://inaturalist.laji.fi/sites/20
 * Unzip the data
-* Run script `tools/simplify.py` for the `inaturalist-suomi-20-observations.csv` file
+* Run script `app/tools/simplify.py` for the `inaturalist-suomi-20-observations.csv` file
 * Place the resulting `latest.tsv` file to `app/privatedata/latest.tsv`
 * Place `inaturalist-suomi-20-users.csv`file to `app/privatedata/latest.tsv`
 * Double-check that Git doesn't see the files, by running `git status`
