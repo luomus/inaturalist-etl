@@ -6,9 +6,6 @@ from collections import OrderedDict
 import time
 
 
-#def url():
-
-
 def getPageFromAPI(url):
   """Get a single pageful of observations from iNat.
 
