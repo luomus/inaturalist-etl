@@ -1,4 +1,6 @@
 {
+    "inat_auto_staging_latest_obsId": 0,
+    "inat_auto_staging_latest_update": "2023-12-27T11%3A45%3A44%2B00%3A00",
     "inat_auto_production_latest_obsId": 0,
     "inat_auto_production_latest_update": "2023-12-27T11%3A45%3A44%2B00%3A00",
     "inat_MANUAL_urlSuffix": "&captive=true",
