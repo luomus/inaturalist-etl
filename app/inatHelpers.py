@@ -185,8 +185,7 @@ def convertTaxon(taxon):
   convert['Chenopodium album'] = "Chenopodium album -ryhmä"
   convert['Imparidentia'] = "Heterodonta" # hieta- ja liejusimpukan alin yhteinen taksoni
   convert['Canis familiaris'] = "Canis lupus familiaris" # koira
-  convert['Anguis colchica'] = "Anguis fragilis" # vaskitsan erilaiset lajikäsitteet tulkitaan  A.fragilikseksi
-  convert['Anguis'] = "Anguis fragilis" # vaskitsan erilaiset lajikäsitteet tulkitaan A.fragilikseksi
+  convert['Anguis'] = "Anguis colchica" # vaskitsan erilaiset lajikäsitteet tulkitaan A. colchicaksi (1/2024)
   convert['Monotropa'] = "Hypopitys"
   convert['Monotropa hypopitys'] = "Hypopitys monotropa" # kangasmäntykukka
   convert['Monotropa hypopitys ssp. hypophegea'] = "Hypopitys hypophegea" # kaljumäntykukka
