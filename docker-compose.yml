@@ -1,11 +1,9 @@
-
 # Build and start:
 # docker-compose up --build
 
 version: '3'
 
 services:
-
   inat_etl:
     build:
       context: .
