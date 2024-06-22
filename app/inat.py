@@ -175,7 +175,7 @@ AirflowLatestUpdate = reduce_minutes(AirflowLatestUpdate, 3)
 
 # GET DATA
 page = 1
-props = { "sleepSeconds": 10, "perPage": 100, "pageLimit": 10000, "urlSuffix": urlSuffix }
+props = { "sleepSeconds": 5, "perPage": 100, "pageLimit": 10000, "urlSuffix": urlSuffix }
 
 # For each pageful of data
 for multiObservationDict in getInat.getUpdatedGenerator(AirflowLatestObsId, AirflowLatestUpdate, **props):
