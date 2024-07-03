@@ -75,9 +75,10 @@ Use iNaturalist API documentation to see what kind of parameters you can give: h
 
 * Download private data from https://inaturalist.laji.fi/sites/20
 * Unzip the data
-* Run script `app/tools/simplify.py` for the `inaturalist-suomi-20-observations.csv` file
-* Place the resulting `latest.tsv` file to `app/privatedata/latest.tsv`
-* Place `inaturalist-suomi-20-users.csv`file to `app/privatedata/latest.tsv`
+* Copy `inaturalist-suomi-20-observations.csv` file to `/app/privatedata/`
+* Run script `app/tools/simplify.py` for this file
+* Delete the `inaturalist-suomi-20-observations.csv` file
+* Copy `inaturalist-suomi-20-users.csv` file to `/app/privatedata/`
 * Double-check that Git doesn't see the files, by running `git status`
 * Test with Mikko's observations by running manual script with filters:
     * `inat_MANUAL_urlSuffix = &user_id=mikkohei13&geoprivacy=obscured%2Cobscured_private%2Cprivate`
