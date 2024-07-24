@@ -47,7 +47,8 @@ Example suffixes:
 * `&taxon_id=211194` # Tracheophyta; this taxon and children
 * `&user_id=mikkohei13&geoprivacy=obscured%2Cobscured_private%2Cprivate` # test with obscured  observations
 * `&place_id=165234` # Finland EEZ
-* `&term_id=17&term_value_id=19` # with attribute dead (not necessarily upvoted?)
+* `&term_id=17&term_value_id=19` # with annotation attribute dead (not necessarily upvoted?)
+* `&term_id=12` # with an annotation for Flowers and Fruit
 * `&field:Host` # Observation field regardless of value
 * `&field:Host%20plant`
 * `&field:Isäntälaji`

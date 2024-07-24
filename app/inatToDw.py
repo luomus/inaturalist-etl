@@ -470,10 +470,10 @@ def convertObservations(inatObservations, privateObservationData, private_emails
       for nro, annotation in enumerate(inat['annotations']):
         key, value = inatHelpers.summarizeAnnotation(annotation)
 
-        # Annotations voted against or tie, only keyword is saved
-        if "keyword" == key:
+        # If annotations voted against, only keyword is saved
+        if "against" == key:
           keywords.append(value)
-        # Annotation voted for, added as unit fact
+        # Annotation voted for or is tie, added as unit fact
         else:
           # NOTE: If annotation is saved as keyword, make sure it's a string, not int.
           factName = "annotation_" + str(key)
@@ -486,6 +486,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
           unit['sex'] = value
         elif "dead" == key:
           unit['dead'] = value # Todo: check that works
+        
 
     # Quality metrics
     qualityMetricUnreliable = False

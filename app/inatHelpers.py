@@ -251,35 +251,45 @@ def summarizeAnnotation(annotation):
   elif 16 == value:
     key = "lifeStage"
     value = "SUBIMAGO"
-  elif 13 == value:
-    key = "lifeStage"
-    value = "FLOWER"
+
   elif 10 == value:
     key = "sex"
     value = "FEMALE"
   elif 11 == value:
     key = "sex"
     value = "MALE"
+
   elif 18 == value:
     key = "dead"
     value = False
   elif 19 == value:
     key = "dead"
     value = True
+
+  elif 13 == value:
+    key = "lifeStage"
+    value = "FLOWER"
+  elif 14 == value:
+    key = "lifeStage"
+    value = "RIPENING_FRUIT" # Note: FinBIF also has RIPE_FRUIT
+  elif 15 == value:
+    key = "lifeStage"
+    value = "BUD"
+
   else:
     pass
 
 
-  if vote_score >= 1:
+  if vote_score >= 0:
     return key, value
 
-  elif vote_score <= -1:
+  else:
 #    print("Annotation " + str(key) + " = " + str(value) + " was voted against by " + str(vote_score))
-    return "keyword", "annotation_against"
+    return "against", "annotation_against"
 
-  elif 0 == vote_score:
+#  elif 0 == vote_score:
 #    print("Annotation " + str(key) + " = " + str(value) + " vote tied")
-    return "keyword", "annotation_tie"
+#    return "keyword", "annotation_tie"
 
 
 def getProxyUrl(squareUrl, imageSize):
