@@ -291,7 +291,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
       # Only agreeing identifications
       if identification['taxon']['name'] == unit['taxonVerbatim']:
         detname = identification['user']['login']
-        if identification['user']['name'] != "":
+        if identification['user']['name']:
           detname = identification['user']['name']
         
         agreeing_identifiers.append(detname)
