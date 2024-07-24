@@ -270,7 +270,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
     # Taxon
     # Special handling for heracleums, to get giant hogweed records
     if "Heracleum" in inat['taxon']['name']:
-      # loop identificatons. If any of them suggests any giant hogweed, and none suggests european hogweed, set as giant hogweed
+      # Todo: Check: loop identificatons. If any of them suggests any giant hogweed, and none suggests european hogweed, set as giant hogweed
       unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon']['name'])
 
     else:
