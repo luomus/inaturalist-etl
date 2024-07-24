@@ -256,20 +256,14 @@ def convertObservations(inatObservations, privateObservationData, private_emails
 
 
     # Taxon
-    # Special handling for heracleums, to get giant hogweed records
-    if "Heracleum" in inat['taxon']['name']:
-      # Todo: Check loop identificatons. If any of them suggests any giant hogweed, and none suggests european hogweed, set as giant hogweed
-      unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon']['name'])
+    # Scientific name iNat interprets this to be, special cases converted to match FinBIF taxonomy
+    unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon']['name'])
 
-    else:
-      # Scientific name iNat interprets this to be, special cases converted to match FinBIF taxonomy
-      unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon']['name'])
+    # Name observer or identifiers(?) have given, can be any language
+    unitFacts.append({ "fact": "species_guess", "value": inat['species_guess']})
 
-      # Name observer or identifiers(?) have given, can be any language
-      unitFacts.append({ "fact": "species_guess", "value": inat['species_guess']})
-
-      # Scientific name iNat interprets this to be
-      unitFacts.append({ "fact": "taxonInterpretationByiNaturalist", "value": inat['taxon']['name']})
+    # Scientific name iNat interprets this to be
+    unitFacts.append({ "fact": "taxonInterpretationByiNaturalist", "value": inat['taxon']['name']})
 
 
     # Identifiers
