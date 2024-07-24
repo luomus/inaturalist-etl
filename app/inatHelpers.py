@@ -212,7 +212,7 @@ def summarizeAnnotation(annotation):
   In the API, vote_score shows the outcome of the voting. positive=agree, 0=tie, negative=disagree
 
   Attributes (= keys):
-  1=Life Stage, 9=Sex, 12=Flowers and Fruit (Plant Phenology), 17=Live or dead, 36=Leaves
+  1=Life Stage, 9=Sex, 12=Flowers and Fruit (Plant Phenology), 17=Alive or dead, 36=Leaves
 
   Values:
   Life Stage: 2=Adult, 3=Teneral, 4=Pupa, 5=Nymph, 6=Larva, 7=Egg, 8=Juvenile, 16=Subimago

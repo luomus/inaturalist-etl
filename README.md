@@ -113,9 +113,10 @@ Use iNaturalist API documentation to see what kind of parameters you can give: h
 
 ### Should/Nice to have:
 
-- Send email on failure
+- Monitor consistent failures on Rahti by Zabbix
 - Fix date created timezone
 - Monitor if iNat API changes (test observation)
-- Conversion: annotation key 17 (inatHelpers)
+- Conversion: annotation key 17 (Alive or dead) once the valua can be handled by FinBIF DW ETL, the verify it works
+   - https://laji.fi/observation/list?collectionId=HR.3211&alive=false
 - Conversion: Remove spaces, special chars etc. from fact names, esp. when handling observation fields
 - Conversion: See todo's from conversion script

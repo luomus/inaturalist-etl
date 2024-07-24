@@ -485,7 +485,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
         elif "sex" == key:
           unit['sex'] = value
         elif "dead" == key:
-          unit['dead'] = value # Todo: check that works
+          unit['dead'] = value
         
 
     # Quality metrics
