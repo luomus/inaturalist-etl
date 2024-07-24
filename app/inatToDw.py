@@ -244,6 +244,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
     publicDocument['secureLevel'] = "NONE"
     publicDocument['concealment'] = "PUBLIC"
 
+    publicDocument['referenceURL'] = inat['uri'] # ADDITION
 
     # Add secure reasons
     # null or "open" means that observation is not private 
@@ -252,6 +253,23 @@ def convertObservations(inatObservations, privateObservationData, private_emails
       publicDocument['secureReasons'].append("DEFAULT_TAXON_CONSERVATION")
     if not ("open" == inat["geoprivacy"] or None == inat["geoprivacy"]):
       publicDocument['secureReasons'].append("USER_HIDDEN_LOCATION")
+
+
+    # Taxon
+    # Special handling for heracleums, to get giant hogweed records
+    if "Heracleum" in inat['taxon']['name']:
+      # Todo: Check loop identificatons. If any of them suggests any giant hogweed, and none suggests european hogweed, set as giant hogweed
+      unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon']['name'])
+
+    else:
+      # Scientific name iNat interprets this to be, special cases converted to match FinBIF taxonomy
+      unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon']['name'])
+
+      # Name observer or identifiers(?) have given, can be any language
+      unitFacts.append({ "fact": "species_guess", "value": inat['species_guess']})
+
+      # Scientific name iNat interprets this to be
+      unitFacts.append({ "fact": "taxonInterpretationByiNaturalist", "value": inat['taxon']['name']})
 
 
     # Identifiers
@@ -265,23 +283,20 @@ def convertObservations(inatObservations, privateObservationData, private_emails
 #    documentFacts.append({ "fact": "referenceURI", "value": inat['uri']}) # replaced with referenceURL
     keywords.append(str(inat['id'])) # id has to be string
 
-    publicDocument['referenceURL'] = inat['uri'] # ADDITION
+    # Get identifiers that agre with the designated identification
+    agreeing_identifiers = []
+    
+    for identification in inat['identifications']:
 
-    # Taxon
-    # Special handling for heracleums, to get giant hogweed records
-    if "Heracleum" in inat['taxon']['name']:
-      # Todo: Check: loop identificatons. If any of them suggests any giant hogweed, and none suggests european hogweed, set as giant hogweed
-      unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon']['name'])
+      # Only agreeing identifications
+      if identification['taxon']['name'] == unit['taxonVerbatim']:
+        detname = identification['user']['login']
+        if identification['user']['name'] != "":
+          detname = identification['user']['name']
+        
+        agreeing_identifiers.append(detname)
 
-    else:
-      # Scientific name iNat interprets this to be, special cases converted to match FinBIF taxonomy
-      unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon']['name'])
-
-      # Name observer or identifiers(?) have given, can be any language
-      unitFacts.append({ "fact": "species_guess", "value": inat['species_guess']})
-
-      # Scientific name iNat interprets this to be
-      unitFacts.append({ "fact": "taxonInterpretationByiNaturalist", "value": inat['taxon']['name']})
+    unit['det'] = ", ".join(agreeing_identifiers)
 
 
     # Observer
