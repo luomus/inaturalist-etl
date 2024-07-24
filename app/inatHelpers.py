@@ -212,12 +212,13 @@ def summarizeAnnotation(annotation):
   In the API, vote_score shows the outcome of the voting. positive=agree, 0=tie, negative=disagree
 
   Attributes (= keys):
-  1=Life Stage, 9=Sex, 12=Plant Phenology, 17=Live or dead
+  1=Life Stage, 9=Sex, 12=Flowers and Fruit (Plant Phenology), 17=Live or dead, 36=Leaves
 
   Values:
   Life Stage: 2=Adult, 3=Teneral, 4=Pupa, 5=Nymph, 6=Larva, 7=Egg, 8=Juvenile, 16=Subimago
   Sex: 10=Female, 11=Male
-  Plant Phenology: 13=Flowering, 14=Fruiting, 15=Budding
+  Flowers and Fruit: 13=Flowering, 14=Fruiting, 15=Budding, 21=No flowers or fruit
+  Leaves: 37=Opening leaves, 38=Green leaves, 39=Colored leaves, 40=No livng leaves
   Live or dead: 18=Live, 19=Dead, 20=Cannot be identified
 
   See in main conversion script how the result is submitted to DW.
