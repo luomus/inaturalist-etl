@@ -585,8 +585,8 @@ def convertObservations(inatObservations, privateObservationData, private_emails
 
 
     # Coordinates
-    # Note that observation can have mappable == false, even though it has coordinates. Example: 87717426 because its has very large error radius
-    if inat['mappable']:
+    # Note that observation can have mappable == false, even though it has coordinates. Example: 87717426 because its has very large error radius, or 231358848 because it's obscured. Therefore check if there is geojson.
+    if inat['geojson']:
       gathering['coordinates'] = inatHelpers.getCoordinates(inat)
 
     # -------------------------------------
