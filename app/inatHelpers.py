@@ -164,7 +164,7 @@ def getCoordinates(inat):
 
 def convertTaxon(taxon):
   # taxon is the full iNat taxon object
-  print("\nTaxon is: ", taxon)
+#  print("\nTaxon is: ", taxon)
   taxon_name = taxon.get('name', "")
   taxon_rank = taxon['rank']
   taxon_group = taxon['iconic_taxon_name']

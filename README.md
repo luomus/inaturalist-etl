@@ -53,6 +53,7 @@ Example suffixes:
 * `&field:Host%20plant`
 * `&field:Isäntälaji`
 * `&field:Lintuatlas,%20pesimävarmuusindeksi`
+* `&rank=subspecies`
 
 Use iNaturalist API documentation to see what kind of parameters you can give: https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
 
