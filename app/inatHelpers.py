@@ -163,9 +163,15 @@ def getCoordinates(inat):
 
 
 def convertTaxon(taxon):
-  convert = {}
+  # taxon is the full iNat taxon object
+  print("\nTaxon is: ", taxon)
+  taxon_name = taxon.get('name', "")
+  taxon_rank = taxon['rank']
+  taxon_group = taxon['iconic_taxon_name']
 
   # Conversions from -> to
+  convert = {}
+
   convert['Life'] = "Biota"
   convert['unknown'] = "Biota"
   convert['Elämä'] = "Biota" # Is this needed?
@@ -188,15 +194,19 @@ def convertTaxon(taxon):
   convert['Anguis'] = "Anguis colchica" # vaskitsan erilaiset lajikäsitteet tulkitaan A. colchicaksi (1/2024)
   convert['Monotropa'] = "Hypopitys"
   convert['Monotropa hypopitys'] = "Hypopitys monotropa" # kangasmäntykukka
-  convert['Monotropa hypopitys ssp. hypophegea'] = "Hypopitys hypophegea" # kaljumäntykukka
+  convert['Monotropa hypopitys ssp. hypophegea'] = "Hypopitys hypophegea" # kaljumäntykukka: TODO: fix ssp
 
+  # If taxon is a subspecies, and taxon is a plant, replace last space with "subsp." For animals, no need to add "subsp." 
+  if "subspecies" == taxon_rank:
+    if "Plantae" == taxon_group:
+      taxon_name = taxon_name.rsplit(' ', 1)[0] + " subsp. " + taxon_name.rsplit(' ', 1)[1]
 
-  if not taxon: # Empty, False, Null/None
+  if not taxon_name: # Empty, False, Null/None
     return ""  
-  elif taxon in convert:
-    return convert[taxon]
+  elif taxon_name in convert:
+    return convert[taxon_name]
   else:
-    return taxon
+    return taxon_name
 
 
 def summarizeAnnotation(annotation):

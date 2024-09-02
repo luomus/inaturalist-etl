@@ -256,8 +256,24 @@ def convertObservations(inatObservations, privateObservationData, private_emails
 
 
     # Taxon
+    # Get det'ers that agrea with the designated identification
+    # This needs to be done before taxonVerbatim is converted
+    agreeing_identifiers = []
+    
+    for identification in inat['identifications']:
+
+      # Only agreeing identifications
+      if identification['taxon']['name'] == inat['taxon']['name']:
+        detname = identification['user']['login']
+        if identification['user']['name']:
+          detname = identification['user']['name']
+        
+        agreeing_identifiers.append(detname)
+
+    unit['det'] = ", ".join(agreeing_identifiers)
+
     # Scientific name iNat interprets this to be, special cases converted to match FinBIF taxonomy
-    unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon']['name'])
+    unit['taxonVerbatim'] = inatHelpers.convertTaxon(inat['taxon'])
 
     # Name observer or identifiers(?) have given, can be any language
     unitFacts.append({ "fact": "species_guess", "value": inat['species_guess']})
@@ -276,21 +292,6 @@ def convertObservations(inatObservations, privateObservationData, private_emails
     documentFacts.append({ "fact": "catalogueNumber", "value": inat['id']})
 #    documentFacts.append({ "fact": "referenceURI", "value": inat['uri']}) # replaced with referenceURL
     keywords.append(str(inat['id'])) # id has to be string
-
-    # Get identifiers that agre with the designated identification
-    agreeing_identifiers = []
-    
-    for identification in inat['identifications']:
-
-      # Only agreeing identifications
-      if identification['taxon']['name'] == unit['taxonVerbatim']:
-        detname = identification['user']['login']
-        if identification['user']['name']:
-          detname = identification['user']['name']
-        
-        agreeing_identifiers.append(detname)
-
-    unit['det'] = ", ".join(agreeing_identifiers)
 
 
     # Observer
