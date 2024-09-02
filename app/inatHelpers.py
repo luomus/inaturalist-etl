@@ -166,8 +166,8 @@ def convertTaxon(taxon):
   # taxon is the full iNat taxon object
 #  print("\nTaxon is: ", taxon)
   taxon_name = taxon.get('name', "")
-  taxon_rank = taxon['rank']
-  taxon_group = taxon['iconic_taxon_name']
+  taxon_rank = taxon.get('rank', "")
+  taxon_group = taxon.get('iconic_taxon_name', "")
 
   # Conversions from -> to
   convert = {}
