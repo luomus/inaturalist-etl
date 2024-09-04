@@ -1,5 +1,9 @@
 # iNaturalist to FinBIF ETL Process
 
+This repository contains a set of Python scripts designed to facilitate an ETL (Extract-Transform-Load) process for synchronizing biodiversity occurrence records from iNaturalist to the Finnish Biodiversity Information Facility (FinBIF) data warehouse. The scripts retrieve data from the iNaturalist open REST API, transform it into the FinBIF-compatible format, and then submit the processed records to the FinBIF REST API. Once submitted, the data is made available on the FinBIF portal at Laji.fi. Additionally, the data is stored in a private data warehouse for restricted access by Finnish public authorities, enriched with private location coordinates from iNaturalist's annual data exports.
+
+The scripts are containerized using Docker and can be executed either manually via the command line or automatically using a cron-based scheduler. The process tracks the last synchronization timestamp and ensures that only records updated or created after that time are synced. It also supports partial synchronization, allowing users to focus on specific subsets of data, such as captive/cultivated observations or obscured records. Currently, deletions are not handled, as iNaturalist's API does not provide deletion information.
+
 ## Setup
 
 * git clone https://github.com/luomus/inaturalist-etl.git
