@@ -58,6 +58,7 @@ Example suffixes:
 * `&field:Isäntälaji`
 * `&field:Lintuatlas,%20pesimävarmuusindeksi`
 * `&rank=subspecies`
+* `&d1=2018-01-01&d2=2020-12-31` # observation dates
 
 Use iNaturalist API documentation to see what kind of parameters you can give: https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
 
