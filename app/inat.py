@@ -50,9 +50,6 @@ def set_variable(var_name, var_value):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
-# Example usage
-# set_variable('test_var', 'test_value')
-
 
 def read_variables():
     # Path to the JSON file
@@ -67,53 +64,20 @@ def read_variables():
         # Return an empty dictionary if the file does not exist
         return {}
 
-# Example usage
-#variables = read_variables()
-#print(variables)
-
-'''
-def setAirflowVariable(variable, value):
-  """Sets an Airflow variable. If setting fails, waits and tries again. If fails, exits with exception.
-
-  Args:
-    variable (string): Name of the variable to be set.
-    value (string): Value to be set.
-
-  Raises:
-    Exception: Setting fails after multiple tries.
-
-  Returns:
-    Nothing.
-  """
-
-  maxRetries = 3
-  sleepSeconds = 3
-
-  for _ in range(maxRetries):
-    try:
-      Variable.set(variable, value)
-    except:
-      print("Setting " + variable + " failed, sleeping " + sleepSeconds + " seconds")
-      time.sleep(sleepSeconds)
-      continue
-    else: # On success
-      break
-  else:
-    raise Exception("Setting " + variable + " failed after " + maxRetries + " retries")
-'''
 
 ### SETUP
 
-#print(pathlib.Path(__file__).parent.resolve()) # /opt/airflow/dags/inaturalist
-#exit("DONE")
-
-#cwd = os.getcwd()
-#print(cwd) # /tmp/airflowtmpa_qykltg
-#exit("CWD DONE")
-
-
 target = sys.argv[1] # staging | production
 mode = sys.argv[2] # auto | manual
+
+# Get sleep time & validate
+if len(sys.argv) > 3:
+  sleep = int(sys.argv[3]) 
+  if sleep < 1:
+    sleep = 10
+else:
+  sleep = 10
+
 
 
 # Load private data
@@ -175,7 +139,7 @@ AirflowLatestUpdate = reduce_minutes(AirflowLatestUpdate, 3)
 
 # GET DATA
 page = 1
-props = { "sleepSeconds": 10, "perPage": 100, "pageLimit": 10000, "urlSuffix": urlSuffix }
+props = { "sleepSeconds": sleep, "perPage": 100, "pageLimit": 10000, "urlSuffix": urlSuffix }
 
 # For each pageful of data
 for multiObservationDict in getInat.getUpdatedGenerator(AirflowLatestObsId, AirflowLatestUpdate, **props):

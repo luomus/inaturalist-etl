@@ -77,6 +77,7 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
       raise Exception("iNat API url malformed, contains space(s)")
 
     inatResponseDict = getPageFromAPI(url)
+
     # TODO: If response is False, or JSON is invalid, wait and try again
     if False == inatResponseDict:
       time.sleep(10)
@@ -95,7 +96,7 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
       latestObsId = inatResponseDict["results"][-1]["id"]
       page = page + 1
   
-      time.sleep(sleepSeconds) # TODO: Can this be after yield?
+      time.sleep(sleepSeconds)
 
       # return whole dict
       yield inatResponseDict
