@@ -1,5 +1,3 @@
-
-
 import requests
 import json
 from collections import OrderedDict
@@ -18,34 +16,48 @@ def getPageFromAPI(url, logging_on = True):
     orderedDictionary: Observatons and associated API metadata (paging etc.)
     False: if iNat API responds with error code, or does not repond at all. 
   """
-  if logging_on:
-    print("Getting " + url)
-  
-  try:
-    inatResponse = requests.get(url)
-  except:
-    raise Exception("Error getting data from iNaturalist API")
+  max_retries = 3
+  retry_delay = 10  # seconds
 
-  # TODO: Find out why slightly too large idAbove returns 200 with zero results, but with much too large returns 400 
-  if 200 == inatResponse.status_code:
+  for attempt in range(max_retries):
     if logging_on:
-      print("iNaturalist API responded " + str(inatResponse.status_code))
-  else:
-    errorCode = str(inatResponse.status_code)
-    if logging_on:
-      print("iNaturalist responded with error " + errorCode)
+      print("Getting " + url)
+      if attempt > 0:
+        print(f"Retry attempt {attempt + 1}/{max_retries}")
+    
+    try:
+      inatResponse = requests.get(url)
+    except:
+      if attempt < max_retries - 1:
+        if logging_on:
+          print(f"Connection error, waiting {retry_delay} seconds before retry")
+        time.sleep(retry_delay)
+        retry_delay *= 2  # Exponential backoff
+        continue
+      raise Exception("Error getting data from iNaturalist API")
+
+    # TODO: Find out why slightly too large idAbove returns 200 with zero results, but with much too large returns 400 
+    if 200 == inatResponse.status_code:
+      if logging_on:
+        print("iNaturalist API responded " + str(inatResponse.status_code))
+    else:
+      errorCode = str(inatResponse.status_code)
+      if logging_on:
+        print("iNaturalist responded with error " + errorCode)
 #    raise Exception(f"iNaturalist API responded with error {errorCode}")
-    return False
+      return False
 
-  # Tries to convert JSON to dict. If iNat API gave invalid JSON, returns False instead.
-  try:
-    inatResponseDict = json.loads(inatResponse.text, object_pairs_hook=OrderedDict)
-  except:
-    if logging_on:
-      print("iNaturalist responded with invalid JSON")
-    inatResponseDict = False
+    # Tries to convert JSON to dict. If iNat API gave invalid JSON, returns False instead.
+    try:
+      inatResponseDict = json.loads(inatResponse.text, object_pairs_hook=OrderedDict)
+    except:
+      if logging_on:
+        print("iNaturalist responded with invalid JSON")
+      inatResponseDict = False
 
-  return inatResponseDict
+    return inatResponseDict
+
+  return False
 
 
 def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleepSeconds, urlSuffix = "", logging_on = True):
