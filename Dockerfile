@@ -5,6 +5,7 @@ ENV PYTHONUNBUFFERED True
 
 RUN apt update
 RUN apt -y upgrade
+RUN apt install -y rclone
 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt

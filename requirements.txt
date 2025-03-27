@@ -1,2 +1,3 @@
 pandas == 2.1.*
 requests == 2.32.*
+rclone-python == 0.1.*
