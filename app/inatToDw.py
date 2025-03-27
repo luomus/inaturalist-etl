@@ -433,7 +433,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
       if "Yksilömäärä" == val['name_ci']:
         abundanceString = val['value_ci']
       if "Lintuatlas, pesimävarmuusindeksi" == val['name_ci']:
-        atlasCode = inatHelpers.extractAtlasCode("atl:" + val['value_ci'])
+        atlasCode = inatHelpers.extractAtlasCode("atl:" + val['value_ci'], logging_on)
       if "Host plant" == val['name_ci'] or "Host" == val['name_ci'] or "Isäntälaji" == val['name_ci'] or "Host" == val['name_ci']:
         if "taxon" in val:
           unitFacts.append({ "fact": "http://tun.fi/MY.hostInformalNameString", "value": val["taxon"]["name"]})
@@ -443,7 +443,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
     # Maybe todo: Get atlascode only if is a bird (iconic_taxon_name == Aves)
     # If atlasCode not from observation field, try to get it from description
     if None == atlasCode:
-      atlasCode = inatHelpers.extractAtlasCode(inat["description"])
+      atlasCode = inatHelpers.extractAtlasCode(inat["description"], logging_on)
     
     # Set atlasCode as a fact
     if None != atlasCode:
@@ -667,8 +667,9 @@ def convertObservations(inatObservations, privateObservationData, private_emails
     # Store last converted observation
     lastUpdateKey = inat["id"]
 
+    # Print line break
     if logging_on:
-      print(" -> done ")
+      print(" ")
 
 
   # End for each observations

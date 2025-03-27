@@ -46,7 +46,7 @@ def load_private_emails():
 # Extracts and validates atlascode from text string
 # Returns None if no valid atlascode found
 # Dev version of this function is on the file atlascode.py
-def extractAtlasCode(text):
+def extractAtlasCode(text, logging_on):
     if None == text:
       return None
 
@@ -83,12 +83,15 @@ def extractAtlasCode(text):
 
     allowedAtlasCodes = ["1","2","3","4","5","6","7","8","61","62","63","64","65","66","71","72","73","74","75","81","82"]
 
-    print(" ATLASCODE: " + atlasCode)
+    if logging_on:
+      print(" ATLASCODE: " + atlasCode, end = " ")
+
     # Check if code is allowed
     if atlasCode in allowedAtlasCodes:
         return atlasCode
     else:
-        print(" Disallowed atlascode skipped: " + atlasCode, end = " ")
+        if logging_on:
+          print(" Disallowed atlascode skipped: " + atlasCode, end = " ")
         return None
 
 

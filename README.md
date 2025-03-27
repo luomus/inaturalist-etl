@@ -27,17 +27,17 @@ To run scripts manually, start with:
 
 ### Update all
 
-Get **all** observations updated since last run and post them to DW. Replace `staging` with `production` in order to push into production. This depends on variables in `store/data.json`. The number is sleep time in seconds between page requests, to avoid overloading the iNat API.
+Get **all** observations updated since last run and post them to DW. Replace `staging` with `production` in order to push into production. This depends on variables in `store/data.json`. True/false defines if detailed logging is printed. The number is sleep time in seconds between page requests, to avoid overloading the iNat API.
 
-    python3 inat.py staging auto 10
+    python3 inat.py staging auto false 10
 
-This script runs until it has reached end of observations, or until it fails due to an error. It should be called automatically to set up fully automatic ETL process.
+This script runs until it has reached end of observations, or until it fails due to an error.
 
 ### Update filtered observations
 
 Get **specified** observations updated since last run, and post to DW. This also depends on variables in `store/data.json`, including urlSuffix, which can be used to filter observations from iNaturalist API.
 
-    python3 inat.py staging manual
+    python3 inat.py staging manual true 10
 
 Example suffixes:
 
