@@ -67,18 +67,26 @@ def read_variables():
 
 ### SETUP
 
+# Mandatory command line arguments
 target = sys.argv[1] # staging | production
 mode = sys.argv[2] # auto | manual
 
-# Get sleep time & validate
-if len(sys.argv) > 3:
-  sleep = int(sys.argv[3]) 
+if sys.argv[3].lower() == 'false':
+  logging_on = False
+else:
+  logging_on = True
+
+# Optional command line arguments
+# Sleep between requests, default 10 seconds
+if len(sys.argv) > 4:
+  sleep = int(sys.argv[4]) 
   if sleep < 1:
     sleep = 10
 else:
   sleep = 10
 
-
+print("Logging " + str(logging_on))
+print("Sleep " + str(sleep))
 
 # Load private data
 # TODO: Move to helpers, load original table like with emails?
