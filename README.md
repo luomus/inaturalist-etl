@@ -9,8 +9,8 @@ The scripts are containerized using Docker and can be executed either manually v
 * git clone https://github.com/luomus/inaturalist-etl.git
 * mkdir app/privatedata
     * Add private data files here, see below
-* cp app/secret_data/secret_data.example.py app/secret_data/secret_data.py
-    * Add your tokens to this file.
+* cp .env.example .env
+    * Add your Laji.fi API tokens to this file.
 * cp app/store/data.example.json app/store/data.json
 * docker-compose up; docker-compose down;
 

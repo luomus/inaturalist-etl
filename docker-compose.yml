@@ -12,3 +12,5 @@ services:
     container_name: inat_etl
     volumes:
       - ./app:/app
+    env_file:
+      - .env

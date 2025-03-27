@@ -1,12 +1,20 @@
-
-
 import requests
-
 import sys
 import os
 
-from secret_data import secret_data
-
+def get_token(target):
+    if target == "staging":
+        token = os.getenv('LAJI_STAGING_TOKEN')
+        if not token:
+            raise ValueError("LAJI_STAGING_TOKEN environment variable is not set")
+        return token
+    elif target == "production":
+        token = os.getenv('LAJI_PRODUCTION_TOKEN')
+        if not token:
+            raise ValueError("LAJI_PRODUCTION_TOKEN environment variable is not set")
+        return token
+    else:
+        raise ValueError(f"Invalid target: {target}")
 
 def postSingle(dwObs, target):
 #  dwObsJson = json.dumps(dwObs)
@@ -15,11 +23,11 @@ def postSingle(dwObs, target):
 
   if "staging" == target:
     print("Pushing to staging API")
-    targetUrl = "https://apitest.laji.fi/v0/warehouse/push?access_token=" + secret_data.inat_staging_token
+    targetUrl = "https://apitest.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
 
   elif "production" == target:
     print("Pushing to production API")
-    targetUrl = "https://api.laji.fi/v0/warehouse/push?access_token=" + secret_data.inat_production_token
+    targetUrl = "https://api.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
 
 
   # Sending post request and saving the response as response object 
@@ -42,11 +50,11 @@ def postMulti(dwObs, target):
 
   if "staging" == target:
     print("Pushing to staging API.")
-    targetUrl = "https://apitest.laji.fi/v0/warehouse/push?access_token=" + secret_data.inat_staging_token
+    targetUrl = "https://apitest.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
 
   elif "production" == target:
     print("Pushing to production API")
-    targetUrl = "https://api.laji.fi/v0/warehouse/push?access_token=" + secret_data.inat_production_token
+    targetUrl = "https://api.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
 
   # sending post request and saving the response as response object 
   print("Pushing to " + targetUrl)
