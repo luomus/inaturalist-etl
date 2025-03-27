@@ -1,7 +1,7 @@
-
 import math
 import re
 import pandas
+import logger
 
 """
 def appendFact(factsList, factLabel, factValue = False):
@@ -38,7 +38,7 @@ def load_private_emails():
   # Select columns and create a dictionary
   private_user_emails = filtered_df[['login', 'email']].set_index('login')['email'].to_dict()
 
-  print(f"Loaded { len(private_user_emails) } private email addresses")
+  logger.log_minimal(f"Loaded { len(private_user_emails) } private email addresses")
 
   return private_user_emails
 
@@ -46,7 +46,7 @@ def load_private_emails():
 # Extracts and validates atlascode from text string
 # Returns None if no valid atlascode found
 # Dev version of this function is on the file atlascode.py
-def extractAtlasCode(text, logging_on):
+def extractAtlasCode(text):
     if None == text:
       return None
 
@@ -83,15 +83,13 @@ def extractAtlasCode(text, logging_on):
 
     allowedAtlasCodes = ["1","2","3","4","5","6","7","8","61","62","63","64","65","66","71","72","73","74","75","81","82"]
 
-    if logging_on:
-      print(" ATLASCODE: " + atlasCode, end = " ")
+    logger.log_full(" ATLASCODE: " + atlasCode + " ")
 
     # Check if code is allowed
     if atlasCode in allowedAtlasCodes:
         return atlasCode
     else:
-        if logging_on:
-          print(" Disallowed atlascode skipped: " + atlasCode, end = " ")
+        logger.log_full(" Disallowed atlascode skipped: " + atlasCode + " ")
         return None
 
 

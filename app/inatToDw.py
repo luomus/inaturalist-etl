@@ -1,7 +1,7 @@
-
 #from collections import defaultdict
 import json # for debug
 import copy
+import logger
 
 import inatHelpers
 
@@ -36,16 +36,14 @@ Note:
 """
 
 
-def skipObservation(inat, logging_on):
+def skipObservation(inat):
   # Note: This is only for skipping observations that don't YET have enough info to be worthwhile to be included to DW. Don't skip e.g. spam here, because then spammy observations would stay in DW forever. Instead mark them as having issues.
 
   if not inat["taxon"]:
-    if logging_on:
-      print(" skipping " + str(inat["id"]) + " without taxon.")
+    logger.log_full(" skipping " + str(inat["id"]) + " without taxon.")
     return True
   elif not inat["observed_on_details"]:
-    if logging_on:
-      print(" skipping " + str(inat["id"]) + " without date.")
+    logger.log_full(" skipping " + str(inat["id"]) + " without date.")
     return True
   else:
     return False
@@ -154,7 +152,7 @@ def hasValue(val):
     return False
 
 
-def convertObservations(inatObservations, privateObservationData, private_emails, logging_on):
+def convertObservations(inatObservations, privateObservationData, private_emails):
   """Convert observations from iNat to FinBIF DW format.
 
   Args:
@@ -196,21 +194,11 @@ def convertObservations(inatObservations, privateObservationData, private_emails
       private_email = private_emails[inat['user']['login']]
       logSuffix = logSuffix + " has private email"
 
-    if logging_on:
-      print("Converting obs " + str(inat["id"]), end = logSuffix)
-
-#    exit()
-    
-    # Debug
-#    jsonData = json.dumps(inat)
-#    print(jsonData)
-#    exit()
+    logger.log_full("Converting obs " + str(inat["id"]) + logSuffix)
 
     # Skip incomplete observations
-    if skipObservation(inat, logging_on):
+    if skipObservation(inat):
       continue
-
-#    dw = defaultdict(dict)
 
     # Prepare elements of the observation
     dw = {}
@@ -433,21 +421,19 @@ def convertObservations(inatObservations, privateObservationData, private_emails
       if "Yksilömäärä" == val['name_ci']:
         abundanceString = val['value_ci']
       if "Lintuatlas, pesimävarmuusindeksi" == val['name_ci']:
-        atlasCode = inatHelpers.extractAtlasCode("atl:" + val['value_ci'], logging_on)
+        atlasCode = inatHelpers.extractAtlasCode("atl:" + val['value_ci'])
       if "Host plant" == val['name_ci'] or "Host" == val['name_ci'] or "Isäntälaji" == val['name_ci'] or "Host" == val['name_ci']:
         if "taxon" in val:
           unitFacts.append({ "fact": "http://tun.fi/MY.hostInformalNameString", "value": val["taxon"]["name"]})
 
     unit['abundanceString'] = abundanceString
 
-    # Maybe todo: Get atlascode only if is a bird (iconic_taxon_name == Aves)
     # If atlasCode not from observation field, try to get it from description
     if None == atlasCode:
-      atlasCode = inatHelpers.extractAtlasCode(inat["description"], logging_on)
+      atlasCode = inatHelpers.extractAtlasCode(inat["description"])
     
     # Set atlasCode as a fact
     if None != atlasCode:
-#      unitFacts.append({ "fact": "atlasCode", "value": atlasCode})
       unit['atlasCode'] = "http://tun.fi/MY.atlasCodeEnum" + atlasCode
 
     # Record basis
@@ -666,11 +652,6 @@ def convertObservations(inatObservations, privateObservationData, private_emails
 
     # Store last converted observation
     lastUpdateKey = inat["id"]
-
-    # Print line break
-    if logging_on:
-      print(" ")
-
 
   # End for each observations
 

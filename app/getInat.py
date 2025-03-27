@@ -2,8 +2,9 @@ import requests
 import json
 from collections import OrderedDict
 import time
+import logger
 
-def getPageFromAPI(url, logging_on = True):
+def getPageFromAPI(url):
   """Get a single pageful of observations from iNat.
 
   Args:
@@ -20,30 +21,27 @@ def getPageFromAPI(url, logging_on = True):
   retry_delay = 10  # seconds
 
   for attempt in range(max_retries):
-    if logging_on:
-      print("Getting " + url)
-      if attempt > 0:
-        print(f"Retry attempt {attempt + 1}/{max_retries}")
+    logger.log_full("Getting " + url)
+    if attempt > 0:
+      logger.log_full(f"Retry attempt {attempt + 1}/{max_retries}")
     
     try:
       inatResponse = requests.get(url)
     except:
       if attempt < max_retries - 1:
-        if logging_on:
-          print(f"Connection error, waiting {retry_delay} seconds before retry")
+        logger.log_full(f"Connection error, waiting {retry_delay} seconds before retry")
         time.sleep(retry_delay)
         retry_delay *= 2  # Exponential backoff
         continue
+      logger.log_minimal("Error getting data from iNaturalist API")
       raise Exception("Error getting data from iNaturalist API")
 
     # TODO: Find out why slightly too large idAbove returns 200 with zero results, but with much too large returns 400 
     if 200 == inatResponse.status_code:
-      if logging_on:
-        print("iNaturalist API responded " + str(inatResponse.status_code))
+      logger.log_full("iNaturalist API responded " + str(inatResponse.status_code))
     else:
       errorCode = str(inatResponse.status_code)
-      if logging_on:
-        print("iNaturalist responded with error " + errorCode)
+      logger.log_minimal("iNaturalist responded with error " + errorCode)
 #    raise Exception(f"iNaturalist API responded with error {errorCode}")
       return False
 
@@ -51,8 +49,7 @@ def getPageFromAPI(url, logging_on = True):
     try:
       inatResponseDict = json.loads(inatResponse.text, object_pairs_hook=OrderedDict)
     except:
-      if logging_on:
-        print("iNaturalist responded with invalid JSON")
+      logger.log_minimal("iNaturalist responded with invalid JSON")
       inatResponseDict = False
 
     return inatResponseDict
@@ -60,7 +57,7 @@ def getPageFromAPI(url, logging_on = True):
   return False
 
 
-def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleepSeconds, urlSuffix = "", logging_on = True):
+def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleepSeconds, urlSuffix = ""):
   """Generator that gets and yields new and updated iNat observations, by handling pagination and calling getPageFromAPI().
 
   Args:
@@ -82,8 +79,7 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
   page = 1
 
   while True:
-    if logging_on:
-      print("Getting set number " + str(page) + " of " + str(pageLimit) + " latestObsId " + str(latestObsId) + " latestUpdateTime " + latestUpdateTime)
+    logger.log_full("Getting set number " + str(page) + " of " + str(pageLimit) + " latestObsId " + str(latestObsId) + " latestUpdateTime " + latestUpdateTime)
 
     # place_id filter: Finland, Åland & Finland EEZ
     url = "https://api.inaturalist.org/v1/observations?place_id=7020%2C10282%2C165234&page=1&per_page=" + str(perPage) + "&order=asc&order_by=id&updated_since=" + latestUpdateTime + "&id_above=" + str(latestObsId) + "&include_new_projects=true" + urlSuffix
@@ -91,23 +87,21 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
     if " " in url:
       raise Exception("iNat API url malformed, contains space(s)")
 
-    inatResponseDict = getPageFromAPI(url, logging_on)
+    inatResponseDict = getPageFromAPI(url)
 
     # TODO: If response is False, or JSON is invalid, wait and try again
     if False == inatResponseDict:
-      if logging_on:
-        print("iNat API returned False, waiting 10 seconds and trying again")
+      logger.log_full("iNat API returned False, waiting 10 seconds and trying again")
       time.sleep(10)
       continue
 
     resultObservationCount = inatResponseDict["total_results"]
 
-    print("Received " + str(resultObservationCount) + " observations")
+    logger.log_minimal("Received " + str(resultObservationCount) + " observations")
 
     # If no observations on page, just return False
     if 0 == resultObservationCount:
-      if logging_on:
-        print("No more observations.")
+      logger.log_full("No more observations.")
       yield False
       break
     

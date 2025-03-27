@@ -27,7 +27,7 @@ To run scripts manually, start with:
 
 ### Update all
 
-Get **all** observations updated since last run and post them to DW. Replace `staging` with `production` in order to push into production. This depends on variables in `store/data.json`. True/false defines if detailed logging is printed. The number is sleep time in seconds between page requests, to avoid overloading the iNat API.
+Get **all** observations updated since last run and post them to DW. Replace `staging` with `production` in order to push into production. This depends on variables in `store/data.json`. True/false defines if full detailed logs are printed. The number is sleep time in seconds between page requests, to avoid overloading the iNat API.
 
     python3 inat.py staging auto false 10
 
