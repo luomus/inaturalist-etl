@@ -5,8 +5,7 @@ import json
 from collections import OrderedDict
 import time
 
-
-def getPageFromAPI(url):
+def getPageFromAPI(url, logging_on = True):
   """Get a single pageful of observations from iNat.
 
   Args:
@@ -19,20 +18,22 @@ def getPageFromAPI(url):
     orderedDictionary: Observatons and associated API metadata (paging etc.)
     False: if iNat API responds with error code, or does not repond at all. 
   """
-  print("Getting " + url)
+  if logging_on:
+    print("Getting " + url)
   
   try:
     inatResponse = requests.get(url)
-  #printObject(inatResponse)
   except:
     raise Exception("Error getting data from iNaturalist API")
 
   # TODO: Find out why slightly too large idAbove returns 200 with zero results, but with much too large returns 400 
   if 200 == inatResponse.status_code:
-    print("iNaturalist API responded " + str(inatResponse.status_code))
+    if logging_on:
+      print("iNaturalist API responded " + str(inatResponse.status_code))
   else:
     errorCode = str(inatResponse.status_code)
-    print("iNaturalist responded with error " + errorCode)
+    if logging_on:
+      print("iNaturalist responded with error " + errorCode)
 #    raise Exception(f"iNaturalist API responded with error {errorCode}")
     return False
 
@@ -40,13 +41,14 @@ def getPageFromAPI(url):
   try:
     inatResponseDict = json.loads(inatResponse.text, object_pairs_hook=OrderedDict)
   except:
-    print("iNaturalist responded with invalid JSON")
+    if logging_on:
+      print("iNaturalist responded with invalid JSON")
     inatResponseDict = False
 
   return inatResponseDict
 
 
-def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleepSeconds, urlSuffix = ""):
+def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleepSeconds, urlSuffix = "", logging_on = True):
   """Generator that gets and yields new and updated iNat observations, by handling pagination and calling getPageFromAPI().
 
   Args:
@@ -68,7 +70,8 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
   page = 1
 
   while True:
-    print("Getting set number " + str(page) + " of " + str(pageLimit) + " latestObsId " + str(latestObsId) + " latestUpdateTime " + latestUpdateTime)
+    if logging_on:
+      print("Getting set number " + str(page) + " of " + str(pageLimit) + " latestObsId " + str(latestObsId) + " latestUpdateTime " + latestUpdateTime)
 
     # place_id filter: Finland, Åland & Finland EEZ
     url = "https://api.inaturalist.org/v1/observations?place_id=7020%2C10282%2C165234&page=1&per_page=" + str(perPage) + "&order=asc&order_by=id&updated_since=" + latestUpdateTime + "&id_above=" + str(latestObsId) + "&include_new_projects=true" + urlSuffix
@@ -76,19 +79,23 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
     if " " in url:
       raise Exception("iNat API url malformed, contains space(s)")
 
-    inatResponseDict = getPageFromAPI(url)
+    inatResponseDict = getPageFromAPI(url, logging_on)
 
     # TODO: If response is False, or JSON is invalid, wait and try again
     if False == inatResponseDict:
+      if logging_on:
+        print("iNat API returned False, waiting 10 seconds and trying again")
       time.sleep(10)
       continue
 
     resultObservationCount = inatResponseDict["total_results"]
-    print("Search matched " + str(resultObservationCount) + " observations.")
+
+    print("Received " + str(resultObservationCount) + " observations")
 
     # If no observations on page, just return False
     if 0 == resultObservationCount:
-      print("No more observations.")
+      if logging_on:
+        print("No more observations.")
       yield False
       break
     

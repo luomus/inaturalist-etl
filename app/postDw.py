@@ -45,27 +45,33 @@ def postSingle(dwObs, target):
     raise Exception(f"DW API responded with error {errorCode}")
 
 
-def postMulti(dwObs, target):
+def postMulti(dwObs, target, logging_on = True):
 #  dwObsJson = json.dumps(dwObs)
 
   if "staging" == target:
-    print("Pushing to staging API.")
+    if logging_on:
+      print("Pushing to staging API.")
     targetUrl = "https://apitest.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
 
   elif "production" == target:
-    print("Pushing to production API")
+    if logging_on:
+      print("Pushing to production API")
     targetUrl = "https://api.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
 
   # sending post request and saving the response as response object 
-  print("Pushing to " + targetUrl)
+  if logging_on:
+    print("Pushing to " + targetUrl)
   targetResponse = requests.post(url = targetUrl, json = dwObs) 
 
   if 200 == targetResponse.status_code:
-    print("API responded " + str(targetResponse.status_code))
+    if logging_on:
+      print("API responded " + str(targetResponse.status_code))
     return True
 
   else:
     errorCode = str(targetResponse.status_code)
+    if logging_on:
+      print(f"API responded with error {errorCode}")
     raise Exception(f"API responded with error {errorCode}")
 
 

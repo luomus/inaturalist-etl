@@ -36,14 +36,16 @@ Note:
 """
 
 
-def skipObservation(inat):
+def skipObservation(inat, logging_on):
   # Note: This is only for skipping observations that don't YET have enough info to be worthwhile to be included to DW. Don't skip e.g. spam here, because then spammy observations would stay in DW forever. Instead mark them as having issues.
 
   if not inat["taxon"]:
-    print(" skipping " + str(inat["id"]) + " without taxon.")
+    if logging_on:
+      print(" skipping " + str(inat["id"]) + " without taxon.")
     return True
   elif not inat["observed_on_details"]:
-    print(" skipping " + str(inat["id"]) + " without date.")
+    if logging_on:
+      print(" skipping " + str(inat["id"]) + " without date.")
     return True
   else:
     return False
@@ -152,7 +154,7 @@ def hasValue(val):
     return False
 
 
-def convertObservations(inatObservations, privateObservationData, private_emails):
+def convertObservations(inatObservations, privateObservationData, private_emails, logging_on):
   """Convert observations from iNat to FinBIF DW format.
 
   Args:
@@ -168,7 +170,6 @@ def convertObservations(inatObservations, privateObservationData, private_emails
   Test:
   - obs without observed_on_details
   """
-
 
   dwObservations = []
   lastUpdateKey = 0
@@ -195,8 +196,8 @@ def convertObservations(inatObservations, privateObservationData, private_emails
       private_email = private_emails[inat['user']['login']]
       logSuffix = logSuffix + " has private email"
 
-
-    print("Converting obs " + str(inat["id"]), end = logSuffix)
+    if logging_on:
+      print("Converting obs " + str(inat["id"]), end = logSuffix)
 
 #    exit()
     
@@ -206,7 +207,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
 #    exit()
 
     # Skip incomplete observations
-    if skipObservation(inat):
+    if skipObservation(inat, logging_on):
       continue
 
 #    dw = defaultdict(dict)
@@ -666,7 +667,8 @@ def convertObservations(inatObservations, privateObservationData, private_emails
     # Store last converted observation
     lastUpdateKey = inat["id"]
 
-    print(" -> done ")
+    if logging_on:
+      print(" -> done ")
 
 
   # End for each observations

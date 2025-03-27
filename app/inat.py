@@ -85,12 +85,20 @@ if len(sys.argv) > 4:
 else:
   sleep = 10
 
+# This will be the new updatedLast time in Variables. Generating update time here, since observations are coming from the API sorted by id, not by datemodified -> cannot use time of last record
+now = datetime.datetime.now()
+thisUpdateTime = now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+thisUpdateTime = thisUpdateTime.replace(":", "%3A")
+thisUpdateTime = thisUpdateTime.replace("+", "%2B")
+
+print("Starting at " + str(thisUpdateTime))
+print("Target " + str(target))
+print("Mode " + str(mode))
 print("Logging " + str(logging_on))
 print("Sleep " + str(sleep))
 
 # Load private data
 # TODO: Move to helpers, load original table like with emails?
-print("Loading private data")
 privateObservationData = pandas.read_csv("./privatedata/latest.tsv", sep='\t') 
 
 # Exclude the last row if it is empty
@@ -99,19 +107,13 @@ if privateObservationData.iloc[-1].isnull().all():
   privateObservationData = privateObservationData.iloc[:-1]
 
 rowCount = len(privateObservationData.index)
-print("Loaded " + str(rowCount) + " rows")
+print("Loaded " + str(rowCount) + " private observation rows")
 
 private_emails = inatHelpers.load_private_emails()
 
+if logging_on:
+  print("------------------------------------------------") 
 
-print("------------------------------------------------") 
-print("Starting inat.py, target " + target) 
-
-# This will be the new updatedLast time in Variables. Generating update time here, since observations are coming from the API sorted by id, not by datemodified -> cannot use time of last record
-now = datetime.datetime.now()
-thisUpdateTime = now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
-thisUpdateTime = thisUpdateTime.replace(":", "%3A")
-thisUpdateTime = thisUpdateTime.replace("+", "%2B")
 
 # Get latest update data
 variables = read_variables()
@@ -150,24 +152,24 @@ latest_update = subtract_minutes(latest_update, 3)
 
 # GET DATA
 page = 1
-props = { "sleepSeconds": sleep, "perPage": 100, "pageLimit": 10000, "urlSuffix": urlSuffix }
+props = { "sleepSeconds": sleep, "perPage": 100, "pageLimit": 10000, "urlSuffix": urlSuffix, "logging_on": logging_on }
 
 # For each pageful of data
 for multiObservationDict in getInat.getUpdatedGenerator(latest_obs_id, latest_update, **props):
 
   # If no more observations on page, finish the process by saving update time and resetting observation id to zero.
   if False == multiObservationDict:
-    print("Finishing, setting latest update to " + thisUpdateTime)
     set_variable(variableName_latest_update, thisUpdateTime)
     set_variable(variableName_latest_obsId, 0)
     set_variable(variableName_status, "finished")
+    print("Finished, latest update set to " + thisUpdateTime)
     break
 
   # CONVERT
-  dwObservations, latestObsId = inatToDw.convertObservations(multiObservationDict['results'], privateObservationData, private_emails)
+  dwObservations, latestObsId = inatToDw.convertObservations(multiObservationDict['results'], privateObservationData, private_emails, logging_on)
 
   # POST
-  postSuccess = postDw.postMulti(dwObservations, target)
+  postSuccess = postDw.postMulti(dwObservations, target, logging_on)
 
   # If this pageful contained data, and was saved successfully to DW, set latestObsId as variable
   if postSuccess:
@@ -180,7 +182,6 @@ for multiObservationDict in getInat.getUpdatedGenerator(latest_obs_id, latest_up
     # Exception because this should not happen in production (happens only if pageLimit is too low compared to frequency of this script being run)
     raise Exception("Page limit " + str(props["pageLimit"]) + " reached, this means that either page limit is set for debugging, or value is too low for production.")
 
-
-print("End") 
-print("------------------------------------------------") 
+if logging_on:
+  print("------------------------------------------------") 
 

@@ -24,7 +24,6 @@ def is_valid_string(s):
 
 
 def load_private_emails():
-  print("Loading private emails")
   private_user_data = pandas.read_csv("./privatedata/inaturalist-suomi-20-users.csv", sep=',') 
 
 #  print(f"Loaded { len(private_user_data.index) } rows")
@@ -39,7 +38,7 @@ def load_private_emails():
   # Select columns and create a dictionary
   private_user_emails = filtered_df[['login', 'email']].set_index('login')['email'].to_dict()
 
-  print(f"Loaded { len(private_user_emails) } email addresses")
+  print(f"Loaded { len(private_user_emails) } private email addresses")
 
   return private_user_emails
 
