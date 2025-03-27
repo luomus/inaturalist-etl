@@ -244,7 +244,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
     publicDocument['secureLevel'] = "NONE"
     publicDocument['concealment'] = "PUBLIC"
 
-    publicDocument['referenceURL'] = inat['uri'] # ADDITION
+    publicDocument['referenceURL'] = inat['uri'].replace("https://www.inaturalist.org", "https://inaturalist.laji.fi")
 
     # Add secure reasons
     # null or "open" means that observation is not private 
