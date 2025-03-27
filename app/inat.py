@@ -114,9 +114,11 @@ if "auto" == mode:
   if "staging" == target:
     variableName_latest_obsId = "inat_auto_staging_latest_obsId"
     variableName_latest_update = "inat_auto_staging_latest_update"
+    variableName_status = "inat_auto_staging_status"
   elif "production" == target:
     variableName_latest_obsId = "inat_auto_production_latest_obsId"
     variableName_latest_update = "inat_auto_production_latest_update"
+    variableName_status = "inat_auto_production_status"
 
 # Manually triggered update
 elif "manual" == mode:
@@ -124,10 +126,11 @@ elif "manual" == mode:
   if "staging" == target:
     variableName_latest_obsId = "inat_MANUAL_staging_latest_obsId"
     variableName_latest_update = "inat_MANUAL_staging_latest_update"
+    variableName_status = "inat_MANUAL_staging_status"
   elif "production" == target:
     variableName_latest_obsId = "inat_MANUAL_production_latest_obsId"
     variableName_latest_update = "inat_MANUAL_production_latest_update"
-
+    variableName_status = "inat_MANUAL_production_status"
 else:
    exit("Invalid mode")
 
@@ -149,6 +152,7 @@ for multiObservationDict in getInat.getUpdatedGenerator(latest_obs_id, latest_up
     print("Finishing, setting latest update to " + thisUpdateTime)
     set_variable(variableName_latest_update, thisUpdateTime)
     set_variable(variableName_latest_obsId, 0)
+    set_variable(variableName_status, "finished")
     break
 
   # CONVERT
@@ -160,6 +164,7 @@ for multiObservationDict in getInat.getUpdatedGenerator(latest_obs_id, latest_up
   # If this pageful contained data, and was saved successfully to DW, set latestObsId as variable
   if postSuccess:
     set_variable(variableName_latest_obsId, latestObsId)
+    set_variable(variableName_status, "ongoing")
 
   if page < props["pageLimit"]:
     page = page + 1
