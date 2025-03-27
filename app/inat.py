@@ -11,15 +11,15 @@ import pandas
 import json
 import os
 
-def reduce_minutes(datetime_str, minutes_to_reduce):
+def subtract_minutes(datetime_str, minutes_to_subtract):
     # Replace encoded characters with their actual representations
     formatted_str = datetime_str.replace('%3A', ':').replace('%2B', '+').replace('%2F', '/')
 
     # Convert the string to a datetime object
     datetime_obj = datetime.datetime.fromisoformat(formatted_str)
 
-    # Subtract 3 minutes
-    new_datetime_obj = datetime_obj - datetime.timedelta(minutes=minutes_to_reduce)
+    # Subtract the specified number of minutes
+    new_datetime_obj = datetime_obj - datetime.timedelta(minutes=minutes_to_subtract)
 
     # Convert back to the required string format
     new_datetime_str = new_datetime_obj.isoformat().replace(':', '%3A').replace('+', '%2B').replace('/', '%2F')
@@ -131,18 +131,18 @@ elif "manual" == mode:
 else:
    exit("Invalid mode")
 
-AirflowLatestObsId = variables[variableName_latest_obsId]
-AirflowLatestUpdate = variables[variableName_latest_update]
+latest_obs_id = variables[variableName_latest_obsId]
+latest_update = variables[variableName_latest_update]
 
 # Reduce minutes from datetime. This is done because observations can appear on the API with delay of few minutes, which would cause them not to be processed. 
-AirflowLatestUpdate = reduce_minutes(AirflowLatestUpdate, 3)
+latest_update = subtract_minutes(latest_update, 3)
 
 # GET DATA
 page = 1
 props = { "sleepSeconds": sleep, "perPage": 100, "pageLimit": 10000, "urlSuffix": urlSuffix }
 
 # For each pageful of data
-for multiObservationDict in getInat.getUpdatedGenerator(AirflowLatestObsId, AirflowLatestUpdate, **props):
+for multiObservationDict in getInat.getUpdatedGenerator(latest_obs_id, latest_update, **props):
 
   # If no more observations on page, finish the process by saving update time and resetting observation id to zero.
   if False == multiObservationDict:
