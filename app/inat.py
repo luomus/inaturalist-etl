@@ -1,5 +1,7 @@
 import datetime
 import sys
+import os
+import json
 
 import getInat
 import inatToDw
@@ -8,23 +10,36 @@ import postDw
 import logger
 
 import pandas
-import json
-import os
 
 def subtract_minutes(datetime_str, minutes_to_subtract):
-    # Replace encoded characters with their actual representations
-    formatted_str = datetime_str.replace('%3A', ':').replace('%2B', '+').replace('%2F', '/')
+    """Subtract minutes from a datetime string.
 
-    # Convert the string to a datetime object
-    datetime_obj = datetime.datetime.fromisoformat(formatted_str)
+    Args:
+        datetime_str (string): ISO format datetime string
+        minutes_to_subtract (int): Number of minutes to subtract
 
-    # Subtract the specified number of minutes
-    new_datetime_obj = datetime_obj - datetime.timedelta(minutes=minutes_to_subtract)
+    Raises:
+        ValueError: If datetime string is invalid
 
-    # Convert back to the required string format
-    new_datetime_str = new_datetime_obj.isoformat().replace(':', '%3A').replace('+', '%2B').replace('/', '%2F')
+    Returns:
+        string: New datetime string in ISO format
+    """
+    try:
+        # Replace encoded characters with their actual representations
+        formatted_str = datetime_str.replace('%3A', ':').replace('%2B', '+').replace('%2F', '/')
 
-    return new_datetime_str
+        # Convert the string to a datetime object
+        datetime_obj = datetime.datetime.fromisoformat(formatted_str)
+
+        # Subtract the specified number of minutes
+        new_datetime_obj = datetime_obj - datetime.timedelta(minutes=minutes_to_subtract)
+
+        # Convert back to the required string format
+        new_datetime_str = new_datetime_obj.isoformat().replace(':', '%3A').replace('+', '%2B').replace('/', '%2F')
+
+        return new_datetime_str
+    except ValueError as e:
+        raise ValueError(f"Invalid datetime string: {datetime_str}") from e
 
 
 # Temp helper
@@ -33,57 +48,81 @@ def printObject(object):
 
 
 def set_variable(var_name, var_value):
-    # Path to the JSON file
+    """Set a variable in the data store.
+
+    Args:
+        var_name (string): Name of the variable
+        var_value: Value to store
+
+    Raises:
+        Exception: If file operations fail
+    """
     file_path = './store/data.json'
 
-    # Read existing data from the file
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-    else:
-        data = {}
+    try:
+        # Read existing data from the file
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+        else:
+            data = {}
 
-    # Update the data with new variable
-    data[var_name] = var_value
+        # Update the data with new variable
+        data[var_name] = var_value
 
-    # Write the updated data back to the file
-    with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4)
+        # Write the updated data back to the file
+        with open(file_path, 'w') as file:
+            json.dump(data, file, indent=4)
+    except Exception as e:
+        raise Exception(f"Failed to update data store: {str(e)}")
 
 
 def read_variables():
-    # Path to the JSON file
+    """Read variables from the data store.
+
+    Raises:
+        Exception: If file operations fail
+
+    Returns:
+        dict: Stored variables
+    """
     file_path = './store/data.json'
 
-    # Check if the file exists
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as file:
-            # Read and return the data from the file
-            return json.load(file)
-    else:
-        # Return an empty dictionary if the file does not exist
-        return {}
+    try:
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as file:
+                return json.load(file)
+        else:
+            return {}
+    except Exception as e:
+        raise Exception(f"Failed to read data store: {str(e)}")
 
 
 ### SETUP
 
 # Mandatory command line arguments
+if len(sys.argv) < 4:
+    raise ValueError("Missing required arguments. Usage: python inat.py <target> <mode> <full_logging> [sleep]")
+
 target = sys.argv[1] # staging | production
 mode = sys.argv[2] # auto | manual
 
 if sys.argv[3].lower() == 'false':
-  full_logging_on = False
+    full_logging_on = False
 else:
-  full_logging_on = True
+    full_logging_on = True
 
 # Optional command line arguments
 # Sleep between requests, default 10 seconds
 if len(sys.argv) > 4:
-  sleep = int(sys.argv[4]) 
-  if sleep < 1:
-    sleep = 10
+    try:
+        sleep = int(sys.argv[4])
+        if sleep < 1:
+            sleep = 10
+    except ValueError:
+        sleep = 10
 else:
-  sleep = 10
+    sleep = 10
 
 # Setup logging
 logger.setup_logging(full_logging_on)
@@ -101,88 +140,109 @@ logger.log_minimal("Full logging " + str(full_logging_on))
 logger.log_minimal("Sleep between iNat requests " + str(sleep))
 
 # Load private data
-# TODO: Move to helpers, load original table like with emails?
-privateObservationData = pandas.read_csv("./privatedata/latest.tsv", sep='\t') 
+try:
+    privateObservationData = pandas.read_csv("./privatedata/latest.tsv", sep='\t')
 
-# Exclude the last row if it is empty
-# Check if the last row is indeed empty
-if privateObservationData.iloc[-1].isnull().all():
-  privateObservationData = privateObservationData.iloc[:-1]
+    # Exclude the last row if it is empty
+    if privateObservationData.iloc[-1].isnull().all():
+        privateObservationData = privateObservationData.iloc[:-1]
 
-rowCount = len(privateObservationData.index)
-logger.log_minimal("Loaded " + str(rowCount) + " private observation rows")
+    rowCount = len(privateObservationData.index)
+    logger.log_minimal("Loaded " + str(rowCount) + " private observation rows")
+except Exception as e:
+    raise Exception(f"Failed to load private observation data: {str(e)}")
 
-private_emails = inatHelpers.load_private_emails()
+try:
+    private_emails = inatHelpers.load_private_emails()
+except Exception as e:
+    raise Exception(f"Failed to load private emails: {str(e)}")
 
-logger.log_full("------------------------------------------------") 
-
+logger.log_full("------------------------------------------------")
 
 # Get latest update data
-variables = read_variables()
+try:
+    variables = read_variables()
+except Exception as e:
+    raise Exception(f"Failed to read variables: {str(e)}")
 
 # Automatic scheduled update
-if "auto" == mode:
-  urlSuffix = ""
-  if "staging" == target:
-    variableName_latest_obsId = "inat_auto_staging_latest_obsId"
-    variableName_latest_update = "inat_auto_staging_latest_update"
-    variableName_status = "inat_auto_staging_status"
-  elif "production" == target:
-    variableName_latest_obsId = "inat_auto_production_latest_obsId"
-    variableName_latest_update = "inat_auto_production_latest_update"
-    variableName_status = "inat_auto_production_status"
+if mode == "auto":
+    urlSuffix = ""
+    if target == "staging":
+        variableName_latest_obsId = "inat_auto_staging_latest_obsId"
+        variableName_latest_update = "inat_auto_staging_latest_update"
+        variableName_status = "inat_auto_staging_status"
+    elif target == "production":
+        variableName_latest_obsId = "inat_auto_production_latest_obsId"
+        variableName_latest_update = "inat_auto_production_latest_update"
+        variableName_status = "inat_auto_production_status"
+    else:
+        raise ValueError(f"Invalid target: {target}")
 
 # Manually triggered update
-elif "manual" == mode:
-  urlSuffix = variables["inat_MANUAL_urlSuffix"]
-  if "staging" == target:
-    variableName_latest_obsId = "inat_MANUAL_staging_latest_obsId"
-    variableName_latest_update = "inat_MANUAL_staging_latest_update"
-    variableName_status = "inat_MANUAL_staging_status"
-  elif "production" == target:
-    variableName_latest_obsId = "inat_MANUAL_production_latest_obsId"
-    variableName_latest_update = "inat_MANUAL_production_latest_update"
-    variableName_status = "inat_MANUAL_production_status"
+elif mode == "manual":
+    urlSuffix = variables.get("inat_MANUAL_urlSuffix", "")
+    if target == "staging":
+        variableName_latest_obsId = "inat_MANUAL_staging_latest_obsId"
+        variableName_latest_update = "inat_MANUAL_staging_latest_update"
+        variableName_status = "inat_MANUAL_staging_status"
+    elif target == "production":
+        variableName_latest_obsId = "inat_MANUAL_production_latest_obsId"
+        variableName_latest_update = "inat_MANUAL_production_latest_update"
+        variableName_status = "inat_MANUAL_production_status"
+    else:
+        raise ValueError(f"Invalid target: {target}")
 else:
-   exit("Invalid mode")
+    raise ValueError(f"Invalid mode: {mode}")
 
-latest_obs_id = variables[variableName_latest_obsId]
-latest_update = variables[variableName_latest_update]
+latest_obs_id = variables.get(variableName_latest_obsId, 0)
+latest_update = variables.get(variableName_latest_update, "")
+
+if not latest_update:
+    raise ValueError(f"Missing latest update time for {mode} mode")
 
 # Reduce minutes from datetime. This is done because observations can appear on the API with delay of few minutes, which would cause them not to be processed. 
-latest_update = subtract_minutes(latest_update, 3)
+try:
+    latest_update = subtract_minutes(latest_update, 3)
+except ValueError as e:
+    raise ValueError(f"Invalid latest update time: {str(e)}")
 
 # GET DATA
 page = 1
-props = { "sleepSeconds": sleep, "perPage": 100, "pageLimit": 10000, "urlSuffix": urlSuffix }
+props = {"sleepSeconds": sleep, "perPage": 100, "pageLimit": 10000, "urlSuffix": urlSuffix}
 
 # For each pageful of data
-for multiObservationDict in getInat.getUpdatedGenerator(latest_obs_id, latest_update, **props):
+try:
+    for multiObservationDict in getInat.getUpdatedGenerator(latest_obs_id, latest_update, **props):
+        # If no more observations on page, finish the process by saving update time and resetting observation id to zero.
+        if multiObservationDict is False:
+            set_variable(variableName_latest_update, thisUpdateTime)
+            set_variable(variableName_latest_obsId, 0)
+            set_variable(variableName_status, "finished")
+            logger.log_minimal("Finished, latest update set to " + thisUpdateTime)
+            break
 
-  # If no more observations on page, finish the process by saving update time and resetting observation id to zero.
-  if False == multiObservationDict:
-    set_variable(variableName_latest_update, thisUpdateTime)
-    set_variable(variableName_latest_obsId, 0)
-    set_variable(variableName_status, "finished")
-    logger.log_minimal("Finished, latest update set to " + thisUpdateTime)
-    break
+        # CONVERT
+        dwObservations, latestObsId = inatToDw.convertObservations(multiObservationDict['results'], privateObservationData, private_emails)
 
-  # CONVERT
-  dwObservations, latestObsId = inatToDw.convertObservations(multiObservationDict['results'], privateObservationData, private_emails)
+        # POST
+        postSuccess = postDw.postMulti(dwObservations, target)
 
-  # POST
-  postSuccess = postDw.postMulti(dwObservations, target)
+        # If this pageful contained data, and was saved successfully to DW, set latestObsId as variable
+        if postSuccess:
+            set_variable(variableName_latest_obsId, latestObsId)
+            set_variable(variableName_status, "ongoing")
 
-  # If this pageful contained data, and was saved successfully to DW, set latestObsId as variable
-  if postSuccess:
-    set_variable(variableName_latest_obsId, latestObsId)
-    set_variable(variableName_status, "ongoing")
+        if page < props["pageLimit"]:
+            page = page + 1
+        else:
+            # Exception because this should not happen in production (happens only if pageLimit is too low compared to frequency of this script being run)
+            raise Exception("Page limit " + str(props["pageLimit"]) + " reached, this means that either page limit is set for debugging, or value is too low for production.")
 
-  if page < props["pageLimit"]:
-    page = page + 1
-  else:
-    # Exception because this should not happen in production (happens only if pageLimit is too low compared to frequency of this script being run)
-    raise Exception("Page limit " + str(props["pageLimit"]) + " reached, this means that either page limit is set for debugging, or value is too low for production.")
+except Exception as e:
+    logger.log_minimal(f"Error during processing: {str(e)}")
+    # Don't re-raise the exception, just exit with error code
+    sys.exit(1)
 
-logger.log_full("------------------------------------------------") 
+logger.log_full("------------------------------------------------")
 

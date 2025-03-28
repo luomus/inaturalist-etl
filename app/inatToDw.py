@@ -523,7 +523,6 @@ def convertObservations(inatObservations, privateObservationData, private_emails
 #    if inat["user"]["suspended"]:
 
 
-
     # Quality grade
     unitFacts.append({ "fact": "quality_grade", "value": inat['quality_grade'] + "_grade"})
     keywords.append(inat['quality_grade'] + "_grade")

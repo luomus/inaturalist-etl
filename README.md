@@ -68,7 +68,8 @@ Use iNaturalist API documentation to see what kind of parameters you can give: h
 * inat.py
     * Get startup variables from `store/data.json`
     * Loads private data to Pandas dataframe
-    * Gets data from iNat and goes through it page-by-page. Uses custom pagination, since iNat pagination does not work past 333 (?) pages.
+* getInat.py
+    * Gets data from iNat and goes through it page-by-page. Uses custom pagination, since iNat pagination does not work past 333 pages.
 * inatToDW.py
     * Converts all observations to DW format
     * Adds private data if it's available, to a privateDocument
@@ -110,11 +111,10 @@ Use iNaturalist API documentation to see what kind of parameters you can give: h
 
 ### Issues:
 
-- Deletions.
+- Deletions, which cannot be done using data from public API.
 - If location of an observation is first set to Finland, then copied to DW, then location is changed on iNaturalist to some other country, changes won't come to DW, since he system only fetches Finnish observations.
-    - Solution: Twice per year, check all occurrences against Finnish data dump. If observation is not found, it's deleted or moved outside Finland -> Delete from DW: Check: data dump should contain all Finnish observations, regardless of user affiliation.
+    - Solution: Twice per year, check all occurrences against Finnish data dump. If observation is not found, it's deleted or moved outside Finland -> Delete from DW.
     - Problem: the data dump does not contain observations submitted after the data dump has been created.
-- Spaces in date variables will cause fatal error with iNat API -> should strip the string
 
 ### Should/Nice to have:
 
