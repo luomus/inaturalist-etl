@@ -33,7 +33,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           oci: true
           containerfiles: |
-            ./Dockerfile.rahti
+            ./Dockerfile
 
       - name: Push To GHCR
         uses: redhat-actions/push-to-registry@v2
