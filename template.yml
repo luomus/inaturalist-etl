@@ -1,0 +1,102 @@
+kind: Template
+apiVersion: template.openshift.io/v1
+parameters:
+  - name: APP
+    required: true
+    value: inaturalist-etl
+  - name: BRANCH
+    required: true
+  - name: LAJI_PRODUCTION_TOKEN
+    required: true
+  - name: LAJI_STAGING_TOKEN
+    required: true
+  - name: RCLONE_ACCESS_KEY_ID
+    required: true
+  - name: RCLONE_SECRET_ACCESS_KEY
+    required: true
+  - name: OBJECT_STORE_PRIVATE
+    required: true
+  - name: OBJECT_STORE_PUBLIC
+    required: true
+  - name: JOB_COMMAND
+    required: true
+  - name: JOB_SCHEDULE
+    required: true
+metadata:
+  name: ${APP}
+objects:
+- kind: ConfigMap
+  apiVersion: v1
+  metadata:
+    name: ${APP}-${BRANCH}
+  data:
+    branch: ${BRANCH}
+    object_store_private: ${OBJECT_STORE_PRIVATE}
+    object_store_public: ${OBJECT_STORE_PUBLIC}
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: ${APP}-${BRANCH}
+  type: Opaque
+  data:
+    laji_staging_token: ${LAJI_STAGING_TOKEN}
+    laji_production_token: ${LAJI_PRODUCTION_TOKEN}
+    rclone_access_key_id: ${RCLONE_ACCESS_KEY_ID}
+    rclone_secret_access_key: ${RCLONE_SECRET_ACCESS_KEY}
+- kind: CronJob
+  apiVersion: batch/v1
+  metadata:
+    name: ${APP}-${BRANCH}
+  spec:
+    schedule: ${JOB_SCHEDULE}
+    concurrencyPolicy: Forbid
+    successfulJobsHistoryLimit: 7
+    failedJobsHistoryLimit: 7
+    jobTemplate:
+      spec:
+        template:
+          metadata:
+            labels:
+              app: ${APP}
+          spec:
+            containers:
+            - name: ${APP}-${BRANCH}
+              image: ghcr.io/luomus/${APP}:${BRANCH}
+              imagePullPolicy: Always
+              command: ${JOB_COMMAND}
+              env:
+              - name: LAJI_STAGING_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: ${APP}-${BRANCH}
+                    key: laji_staging_token
+              - name: LAJI_PRODUCTION_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: ${APP}-${BRANCH}
+                    key: laji_production_token
+              - name: RCLONE_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: ${APP}-${BRANCH}
+                    key: rclone_access_key_id
+              - name: RCLONE_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: ${APP}-${BRANCH}
+                    key: rclone_secret_access_key
+              - name: OBJECT_STORE_PRIVATE
+                valueFrom:
+                  configMapKeyRef:
+                    name: ${APP}-${BRANCH}
+                    key: object_store_private
+              - name: OBJECT_STORE_PUBLIC
+                valueFrom:
+                  configMapKeyRef:
+                    name: ${APP}-${BRANCH}
+                    key: object_store_public
+              resources:
+                limits:
+                  cpu: "500m"
+                  memory: "1000Mi"
+            restartPolicy: Never
