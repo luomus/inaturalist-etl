@@ -16,6 +16,7 @@ RUN mkdir -p /usr/src/app
 
 # Copy the app and adjust permissions for OpenShift
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY rclone.conf /usr/src/app/.config/rclone/rclone.conf
 COPY ./app /usr/src/app
 RUN chgrp -R 0 /usr/src/app && \
     chmod -R g=u /usr/src/app /etc/passwd
