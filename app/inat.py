@@ -11,6 +11,8 @@ import logger
 
 import pandas
 
+import rclone_python
+
 def subtract_minutes(datetime_str, minutes_to_subtract):
     """Subtract minutes from a datetime string.
 
@@ -73,6 +75,11 @@ def set_variable(var_name, var_value):
         # Write the updated data back to the file
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
+
+        # Sync data.json with object store
+        object_store = 'default:' + os.getenv('OBJECT_STORE_PUBLIC')
+
+        rclone_python.sync('store', object_store)
     except Exception as e:
         raise Exception(f"Failed to update data store: {str(e)}")
 
