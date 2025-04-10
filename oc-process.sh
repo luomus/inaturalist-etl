@@ -29,7 +29,7 @@ if [ "$BRANCH" != "main" ]; then
 
 fi
 
-elif [ $i = "config" ]; then
+if [ $i = "config" ]; then
 
   ITEM=".items[0]"
 
