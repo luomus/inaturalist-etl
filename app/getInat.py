@@ -81,6 +81,9 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
     # place_id filter: Finland, Åland & Finland EEZ
     url = "https://api.inaturalist.org/v1/observations?place_id=7020%2C10282%2C165234&page=1&per_page=" + str(perPage) + "&order=asc&order_by=id&updated_since=" + latestUpdateTime + "&id_above=" + str(latestObsId) + "&include_new_projects=true" + urlSuffix
 
+    # Place: whole world
+#    url = "https://api.inaturalist.org/v1/observations?page=1&per_page=" + str(perPage) + "&order=asc&order_by=id&updated_since=" + latestUpdateTime + "&id_above=" + str(latestObsId) + "&include_new_projects=true" + urlSuffix
+
     if " " in url:
       raise Exception("iNat API url malformed, contains space(s)")
 

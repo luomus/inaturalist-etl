@@ -56,6 +56,7 @@ Example suffixes:
 * `&field:Host` # Observation field regardless of value
 * `&field:Host%20plant`
 * `&field:Isäntälaji`
+* `&field:Habitat`
 * `&field:Lintuatlas,%20pesimävarmuusindeksi`
 * `&rank=subspecies`
 * `&d1=2018-01-01&d2=2020-12-31` # observation dates

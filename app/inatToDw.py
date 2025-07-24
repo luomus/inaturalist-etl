@@ -152,6 +152,54 @@ def hasValue(val):
     return False
 
 
+def getCountryFromPlaceGuess(place_guess):
+  """Extract standardized country name from place guess string.
+  
+  Args:
+    place_guess (str): The place name string to check for country names
+  
+  Returns:
+    str: Standardized country name if found, empty string if not found
+  """
+  if place_guess == "" or place_guess == None:
+    return ""
+
+  country_mappings = {
+    "Finland": ["Finland", "Suomi"],
+    "Netherlands": ["Netherlands", "Nederland", "Alankomaat"],
+    "United States": ["USA", "United States", "Yhdysvallat"],
+    "Spain": ["Spain", "España", "Espanja"],
+    "Sweden": ["Sweden", "Sverige", "Ruotsi"],
+    "United Kingdom": ["UK", "United Kingdom", "Iso-Britannia"],
+    "Switzerland": ["Switzerland", "Sveitsi"],
+    "Malta": ["Malta"],
+    "Greece": ["Greece", "Kreikka"],
+    "Estonia": ["Estonia", "Eesti", "Viro"],
+    "Norway": ["Norway", "Norge", "Norja"],
+    "Denmark": ["Denmark", "Danmark", "Tanska"],
+    "Belgium": ["Belgium", "Belgia", "België"],
+    "Germany": ["Germany", "Deutschland", "Saksa"],
+    "France": ["France", "Ranska"],
+    "Italy": ["Italy", "Italia"],
+    "Portugal": ["Portugal", "Portugali"],
+    "Russia": ["Russia", "Venäjä"],
+    "Latvia": ["Latvia", "Latvija"],
+    "Lithuania": ["Lithuania", "Liettua"],
+    "Poland": ["Poland", "Puola"],
+    "Iceland": ["Iceland", "Islanti"],
+    "Australia": ["Australia", "Australia"],
+    "New Zealand": ["New Zealand", "Uusi-Seelanti"],
+    "Japan": ["Japan", "Japani"],
+    "China": ["China", "Kiina"],
+    "South Korea": ["South Korea", "Etelä-Korea"]    
+  }
+  
+  for country, variations in country_mappings.items():
+    if any(variation in place_guess for variation in variations):
+      return country
+  return ""
+
+
 def convertObservations(inatObservations, privateObservationData, private_emails):
   """Convert observations from iNat to FinBIF DW format.
 
@@ -343,9 +391,8 @@ def convertObservations(inatObservations, privateObservationData, private_emails
     # Locality
     # Locality name used to be reversed, but not needed really?
     gathering['locality'] = inat['place_guess']
-    gathering['country'] = "" # Finland removed as country, so that fixing observations outside Finland is possible. iNaturalist does not have dedicated country field, country name is sometimes included on the place_guess field.
-
-
+    gathering['country'] = getCountryFromPlaceGuess(inat['place_guess'])
+    
     # Tags
     if "tags" in inat:
       keywords = appendTags(keywords, inat["tags"])
@@ -422,6 +469,8 @@ def convertObservations(inatObservations, privateObservationData, private_emails
         abundanceString = val['value_ci']
       if "Lintuatlas, pesimävarmuusindeksi" == val['name_ci']:
         atlasCode = inatHelpers.extractAtlasCode("atl:" + val['value_ci'])
+      if "Habitat" == val['name_ci'] or "Biotope" == val['name_ci'] or "Habitaatti" == val['name_ci'] or "Biotooppi" == val['name_ci']:
+        unitFacts.append({ "fact": "http://tun.fi/MY.habitatDescription", "value": val["value_ci"]})
       if "Host plant" == val['name_ci'] or "Host" == val['name_ci'] or "Isäntälaji" == val['name_ci'] or "Host" == val['name_ci']:
         if "taxon" in val:
           unitFacts.append({ "fact": "http://tun.fi/MY.hostInformalNameString", "value": val["taxon"]["name"]})

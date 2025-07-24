@@ -8,10 +8,12 @@ parent_dir = os.path.dirname(os.path.dirname(__file__))
 secret_data_path = os.path.join(parent_dir, 'secret_data')
 sys.path.append(secret_data_path)
 
-import secret_data
+#import secret_data
+
+token_TEMPORARY= "token here"
  
 # Define the API endpoint
-url = f"https://api.laji.fi/v0/warehouse/push?access_token={secret_data.inat_production_token}"
+url = f"https://api.laji.fi/v0/warehouse/push?access_token={token_TEMPORARY}"
 
 # Path to plain iNaturalist identifiers to be deleted from Laji.fi
 # The file was generated with https://gist.github.com/mikkohei13/fc7ccb467b8088a5ad3ec8310cff3b1a
