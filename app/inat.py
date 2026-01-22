@@ -153,7 +153,7 @@ logger.log_minimal("Sleep between iNat requests " + str(sleep))
 
 # Load private data
 try:
-    privateObservationData = pandas.read_csv("./privatedata/latest.tsv", sep='\t')
+    privateObservationData = pandas.read_csv("./privatedata/latest-ALLAS.tsv", sep='\t')
 
     # Exclude the last row if it is empty
     if privateObservationData.iloc[-1].isnull().all():

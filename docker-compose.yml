@@ -1,5 +1,14 @@
-# Build and start:
-# docker-compose up --build
+# Build the image:
+# docker-compose build
+#
+# Test OpenShift behavior (runs and exits):
+# docker-compose run --rm inat_etl
+#
+# Local development - run inat.py with custom parameters:
+# docker-compose run --rm inat_etl staging manual true 10
+#
+# Local development - run single.py:
+# docker-compose run --rm inat_etl single.py 194920696 dry
 
 version: '3'
 
@@ -9,8 +18,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: my_inat_python
+    # Remove container after it exits (for job-style execution)
     container_name: inat_etl
-    volumes:
-      - ./app:/app
     env_file:
       - .env

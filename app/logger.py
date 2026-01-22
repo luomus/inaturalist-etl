@@ -8,6 +8,12 @@ def setup_logging(logging_on):
     """
     level = logging.DEBUG if logging_on else logging.INFO
     logging.basicConfig(level=level, format='%(message)s')
+    
+    # Suppress verbose boto3/botocore debug logs (they're too noisy)
+    logging.getLogger('boto3').setLevel(logging.WARNING)
+    logging.getLogger('botocore').setLevel(logging.WARNING)
+    logging.getLogger('s3transfer').setLevel(logging.WARNING)
+    logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 def log_full(msg):
     """Log a detailed message that should only appear in full logging mode.

@@ -27,7 +27,7 @@ def _get_s3_client():
     allas_bucket = os.getenv('ALLAS_BUCKET')
     allas_object_key_3 = os.getenv('ALLAS_OBJECT_KEY_3')
     
-    if not all(all([allas_endpoint, allas_access_key, allas_secret_key, allas_bucket, allas_object_key_3])):
+    if not all([allas_endpoint, allas_access_key, allas_secret_key, allas_bucket, allas_object_key_3]):
         raise ValueError("Missing required Allas configuration for upload. Check environment variables.")
     
     # Store config for later use
@@ -48,7 +48,7 @@ def _get_s3_client():
     except Exception as e:
         raise Exception(f"Failed to initialize S3 client for upload: {str(e)}")
 
-def upload_state_file(local_file_path='./store/data.json', silent=False):
+def upload_state_file(local_file_path='./store/data-ALLAS.json', silent=False):
     """Upload the state file to Allas S3 storage.
     
     Args:
