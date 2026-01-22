@@ -2,12 +2,15 @@ import datetime
 import sys
 import os
 import json
+import signal
+import atexit
 
 import getInat
 import inatToDw
 import inatHelpers
 import postDw
 import logger
+import upload_to_allas
 
 import pandas
 
@@ -48,7 +51,7 @@ def printObject(object):
 
 
 def set_variable(var_name, var_value):
-    """Set a variable in the data store.
+    """Set a variable in the data store and upload to Allas.
 
     Args:
         var_name (string): Name of the variable
@@ -57,7 +60,7 @@ def set_variable(var_name, var_value):
     Raises:
         Exception: If file operations fail
     """
-    file_path = './store/data.json'
+    file_path = './store/data-ALLAS.json'
 
     try:
         # Read existing data from the file
@@ -73,8 +76,14 @@ def set_variable(var_name, var_value):
         # Write the updated data back to the file
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
+        
+        # Upload to Allas after each write (real-time sync)
+        upload_to_allas.upload_state_file(file_path, silent=True)
+
+        logger.log_minimal(f"Updated variable {var_name} as {var_value} to Allas")
     except Exception as e:
-        raise Exception(f"Failed to update data store: {str(e)}")
+        logger.log_minimal(f"Failed to update variable {var_name} as {var_value} to Allas")
+        raise Exception(f"Failed to update data store and upload to Allas: {str(e)}")
 
 
 def read_variables():
@@ -86,16 +95,19 @@ def read_variables():
     Returns:
         dict: Stored variables
     """
-    file_path = './store/data.json'
+    file_path = './store/data-ALLAS.json'
 
     try:
         if os.path.exists(file_path):
             with open(file_path, 'r') as file:
-                return json.load(file)
+                variables = json.load(file)
+                logger.log_minimal(f"Read variables from Allas: {variables}")
+                return variables
         else:
+            logger.log_minimal("No state file found, starting with empty variables")
             return {}
     except Exception as e:
-        raise Exception(f"Failed to read data store: {str(e)}")
+        raise Exception(f"Failed to read from Allas data store: {str(e)}")
 
 
 ### SETUP
@@ -158,6 +170,24 @@ except Exception as e:
     raise Exception(f"Failed to load private emails: {str(e)}")
 
 logger.log_full("------------------------------------------------")
+
+# Setup signal handlers to upload state file on termination
+def signal_handler(signum, frame):
+    """Handle termination signals by uploading state file before exit."""
+    logger.log_minimal(f"Received signal {signum}, uploading state file to Allas...")
+    upload_to_allas.upload_state_file(silent=False)
+    sys.exit(1)
+
+# Register signal handlers for graceful shutdown
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
+
+# Register atexit handler to upload on normal exit
+def upload_on_exit():
+    """Upload state file when script exits normally."""
+    upload_to_allas.upload_state_file(silent=True)
+
+atexit.register(upload_on_exit)
 
 # Get latest update data
 try:
@@ -241,8 +271,15 @@ try:
 
 except Exception as e:
     logger.log_minimal(f"Error during processing: {str(e)}")
+    # Upload state file before exiting on error
+    logger.log_minimal("Uploading state file to Allas before exit...")
+    upload_to_allas.upload_state_file(silent=False)
     # Don't re-raise the exception, just exit with error code
     sys.exit(1)
+
+# Upload state file on successful completion
+logger.log_minimal("Uploading final state file to Allas...")
+upload_to_allas.upload_state_file(silent=False)
 
 logger.log_full("------------------------------------------------")
 

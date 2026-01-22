@@ -1,4 +1,6 @@
 **/privatedata/**
+**/store/**
+
 
 secret_data.py
 app/privatedata/*
