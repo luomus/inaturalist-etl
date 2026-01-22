@@ -10,13 +10,15 @@ RUN apt install -y rclone
 COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt
 
-# Copy application code
-COPY app /app
+# Copy the download script
+COPY app/download_from_allas.py /app/download_from_allas.py
+RUN chmod +x /app/download_from_allas.py
 
-# Copy and set up entrypoint script
-COPY entrypoint.py /entrypoint.py
-RUN chmod +x /entrypoint.py
+# Copy the entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 WORKDIR /app
 
-ENTRYPOINT ["/entrypoint.py"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["tail", "-f", "/dev/null"]

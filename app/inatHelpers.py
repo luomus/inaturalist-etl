@@ -24,7 +24,7 @@ def is_valid_string(s):
 
 
 def load_private_emails():
-  private_user_data = pandas.read_csv("./privatedata/inaturalist-suomi-20-users.csv", sep=',') 
+  private_user_data = pandas.read_csv("./privatedata/inaturalist-suomi-20-users-ALLAS.csv", sep=',') 
 
 #  print(f"Loaded { len(private_user_data.index) } rows")
 

@@ -35,7 +35,7 @@ id = sys.argv[1] # id of the iNat observation
 target = sys.argv[2] # dry | dry-verbose | production
 
 # Load private data
-privateObservationData = pandas.read_csv("./privatedata/latest.tsv", sep='\t')
+privateObservationData = pandas.read_csv("./privatedata/latest-ALLAS.tsv", sep='\t')
 
 # Exclude the last row if it is empty
 # Check if the last row is indeed empty
