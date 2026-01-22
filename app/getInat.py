@@ -121,6 +121,7 @@ def getSingle(observationId):
     orderedDictionary: Single observation and associated API metadata.
   """
   url = "https://api.inaturalist.org/v1/observations?id=" + str(observationId) + "&order=desc&order_by=created_at&include_new_projects=true"
+  print("URL: " + url)
 
   try:
     inatResponseDict = getPageFromAPI(url)
