@@ -1,5 +1,6 @@
 **/privatedata/**
 **/store/**
+**/examples/**
 
 secret_data.py
 app/privatedata/*

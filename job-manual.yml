@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: inaturalist-etl-manual
+spec:
+  template:
+    spec:
+      containers:
+      - name: inaturalist-etl
+        image: ghcr.io/luomus/inaturalist-etl:latest
+        imagePullPolicy: Always
+        envFrom:
+        - secretRef:
+            name: inaturalist-etl-env
+      restartPolicy: Never
+  backoffLimit: 2
