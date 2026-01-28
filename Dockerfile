@@ -15,8 +15,14 @@ RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 # Copy all application code
 COPY app/ /app/
 
-# Make entrypoint executable
-RUN chmod +x /app/entrypoint.py
+# Create writable runtime directories (OpenShift-friendly: arbitrary UID)
+RUN mkdir -p /app/store /app/privatedata && \
+    chmod 0777 /app/store /app/privatedata && \
+    chmod +x /app/entrypoint.py
+
+# Run as non-root by default (OpenShift will still be able to override UID)
+RUN useradd --system --uid 1001 --home-dir /app --shell /usr/sbin/nologin appuser
+USER 1001
 
 WORKDIR /app
 

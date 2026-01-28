@@ -16,11 +16,12 @@ def ensure_writable_directories():
     directories = ['/app/store', '/app/privatedata']
     for directory in directories:
         if not os.path.exists(directory):
+            # Create with permissive mode so arbitrary UIDs (OpenShift) can write.
+            # Note: actual permissions may also be affected by umask.
             os.makedirs(directory, mode=0o777, exist_ok=True)
             print(f"Created directory: {directory}")
-        else:
-            # Ensure directory is writable (chmod 777)
-            os.chmod(directory, 0o777)
+        # Do not chmod at runtime: the container runs as non-root in OpenShift.
+        # Permissions are set during image build (see Dockerfile).
 
 def main():
     """Main entrypoint function."""
