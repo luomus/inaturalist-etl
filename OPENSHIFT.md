@@ -1,6 +1,6 @@
 # OpenShift runbook
 
-This project runs on **CSC OpenShift** as a one-off Job (manual trigger). The container starts, runs the ETL, and exits. No CronJob by default; add one later if you want scheduled runs.
+This project runs on **CSC OpenShift**. The ETL runs **once per hour** via a CronJob. You can also run it manually with a one-off Job.
 
 **Prerequisites:** `oc` CLI, access to the OpenShift project `inaturalist-etl`, and a local `.env` file with Allas and Laji.fi credentials (see `.env.example`).
 
@@ -19,7 +19,7 @@ oc project inaturalist-etl
 
 ### 2. Create the env Secret from your `.env`
 
-Secrets hold credentials; the Job loads them as environment variables.
+Secrets hold credentials; the CronJob and manual Job load them as environment variables.
 
 ```bash
 oc -n inaturalist-etl create secret generic inaturalist-etl-env --from-env-file=.env
@@ -56,45 +56,65 @@ When you change the Python code and want that version running on OpenShift:
    Commit and push to `main`. GitHub Actions builds and pushes `ghcr.io/luomus/inaturalist-etl:latest` to GHCR. Wait for the [Actions](https://github.com/luomus/inaturalist-etl/actions) workflow to succeed.
 
 3. **Run the new version on OpenShift**  
-   The Job uses `imagePullPolicy: Always` and tag `:latest`, so the next Job run will pull the updated image. No change to `job-manual.yml` needed.
+   The Job uses `imagePullPolicy: Always` and tag `:latest`, so the next Job run will pull the updated image. No change to `job-manual.yml` or `cronjob.yml` needed.
 
 ---
 
-## Run the ETL manually
+## Hourly run (CronJob)
 
-### 3. Create the Job
+### 3. Deploy the CronJob
 
-Creating the Job **starts the process immediately** (Kubernetes schedules a pod and runs the container).
+Apply the CronJob so the ETL runs **once per hour** (at minute 0):
 
 ```bash
-oc -n inaturalist-etl apply -f job-manual.yml
+oc -n inaturalist-etl apply -f cronjob.yml
 ```
 
-### 4. Watch logs
+- **Schedule:** `0 * * * *` (every hour at :00).
+- **Concurrency:** `Forbid` — if a run is still in progress at the next hour, the next run is skipped until the current one finishes.
+- **History:** Last 3 successful and 3 failed Job runs are kept.
 
-Stream logs from the Job’s pod (run this right after step 3 to follow the run):
+### 4. Check CronJob and runs
 
-```bash
-oc -n inaturalist-etl logs -f job/inaturalist-etl-manual
-```
-
-### 5. Check status
-
-See if the Job and its pod are running or finished:
+See the CronJob and Jobs created by it:
 
 ```bash
+oc -n inaturalist-etl get cronjobs
 oc -n inaturalist-etl get jobs
 oc -n inaturalist-etl get pods
 ```
 
+To see logs of the latest run (replace `<job-name>` with the name from `get jobs`, e.g. `inaturalist-etl-28345678`):
+
+```bash
+oc -n inaturalist-etl logs job/<job-name>
+```
+
+Or list pods, find the one for the run you care about, then:
+
+```bash
+oc -n inaturalist-etl logs -f <pod-name>
+```
+
 ---
 
-## Run again later
+## Run the ETL manually (one-off)
 
-Jobs are immutable. To run the ETL again:
+For an ad-hoc run (e.g. after deploying a new image or testing):
 
-1. Delete the previous Job (keeps the secret; only the Job is removed).
-2. Create a new Job with the same YAML.
+1. Create the Job (this **starts the process immediately**):
+
+   ```bash
+   oc -n inaturalist-etl apply -f job-manual.yml
+   ```
+
+2. Watch logs:
+
+   ```bash
+   oc -n inaturalist-etl logs -f job/inaturalist-etl-manual
+   ```
+
+To run again later, delete the Job and create a new one (Jobs are immutable):
 
 ```bash
 oc -n inaturalist-etl delete job inaturalist-etl-manual
@@ -109,11 +129,14 @@ oc -n inaturalist-etl logs -f job/inaturalist-etl-manual
 | Command | Purpose |
 |--------|---------|
 | `oc project inaturalist-etl` | Switch to the ETL project |
+| `oc -n inaturalist-etl get cronjobs` | List CronJobs |
+| `oc -n inaturalist-etl get jobs` | List Jobs (from CronJob and manual) |
 | `oc -n inaturalist-etl get pods` | List pods (see running/completed) |
-| `oc -n inaturalist-etl get jobs` | List Jobs |
+| `oc -n inaturalist-etl logs job/<job-name>` | Logs of a Job (from `get jobs`) |
+| `oc -n inaturalist-etl logs -f job/inaturalist-etl-manual` | Stream logs of manual Job |
 | `oc -n inaturalist-etl describe pod <pod-name>` | Pod details and events (e.g. image pull errors) |
-| `oc -n inaturalist-etl logs job/inaturalist-etl-manual` | Print logs (no follow) |
-| `oc -n inaturalist-etl delete job inaturalist-etl-manual` | Remove the Job (and its pods) |
+| `oc -n inaturalist-etl delete job inaturalist-etl-manual` | Remove the manual Job (and its pods) |
+| `oc -n inaturalist-etl delete cronjob inaturalist-etl` | Stop hourly runs (remove CronJob) |
 
 ---
 
@@ -129,6 +152,7 @@ oc -n inaturalist-etl logs -f job/inaturalist-etl-manual
 
 ## Files involved
 
-- **`job-manual.yml`** – OpenShift Job definition: image, secret name, restart policy. Edit to change image tag or resource limits.
+- **`cronjob.yml`** – CronJob: runs the ETL every hour. Edit to change schedule (e.g. `"0 */2 * * *"` for every 2 hours) or resource limits.
+- **`job-manual.yml`** – One-off Job for manual runs. Same image and secret as the CronJob.
 - **`.env`** – Local only; never commit. Used to create/update the Secret and for local Docker runs.
-- **`examples/`** – Optional; `template.yml` and `oc-process.sh` are for a branch-based CronJob setup and are not required for this manual Job workflow.
+- **`examples/`** – Optional; `template.yml` and `oc-process.sh` are for a different branch-based setup and are not required.

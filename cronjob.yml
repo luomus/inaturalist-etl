@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: inaturalist-etl
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: inaturalist-etl
+            image: ghcr.io/luomus/inaturalist-etl:latest
+            imagePullPolicy: Always
+            envFrom:
+            - secretRef:
+                name: inaturalist-etl-env
+          restartPolicy: Never
+      backoffLimit: 2
