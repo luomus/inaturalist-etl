@@ -6,38 +6,50 @@ The scripts are containerized using Docker and can be executed either manually v
 
 ## Setup
 
-* git clone https://github.com/luomus/inaturalist-etl.git
-* mkdir app/privatedata
+* `git clone https://github.com/luomus/inaturalist-etl.git`
+* `mkdir app/privatedata`
     * Add private data files here, see below
-* cp .env.example .env
+* `cp .env.example .env`
     * Add your Laji.fi API tokens to this file.
-* cp app/store/data.example.json app/store/data.json
-* docker-compose up; docker-compose down;
+* `cp app/store/data.example.json app/store/data.json`
 
-## Running
+## Running scripts manually with Docker Compose
 
-To run scripts manually, start with:
+**Start Docker Compose:**
 
-    docker exec -ti inat_etl bash
-    cd app
+```bash
+docker-compose build
+docker-compose up; docker-compose down;
+```
 
-### Debug single observation
+Then get a shell inside the container:
 
-    python3 single.py 194920696 dry 
+```bash
+docker exec -ti inat_etl bash
+cd app
+```
 
-### Update all
+**Debug single observation:**
 
-Get **all** observations updated since last run and post them to DW. Replace `staging` with `production` in order to push into production. This depends on variables in `store/data.json`. True/false defines if full detailed logs are printed. The number is sleep time in seconds between page requests, to avoid overloading the iNat API.
+```bash
+python3 single.py 194920696 dry 
+```
 
-    python3 inat.py staging auto false 10
+**Update all:**
 
-This script runs until it has reached end of observations, or until it fails due to an error.
+Get **all** observations updated since last run and post them to DW. Replace `staging` with `production` in order to push into production. This depends on variables in `store/data.json`. True/false defines if full detailed logs are printed. The number is sleep time in seconds between page requests, to avoid overloading the iNat API. This script runs until it has reached end of observations, or until it fails due to an error.
 
-### Update filtered observations
+```bash
+python3 inat.py staging auto true 5
+```
+
+**Update filtered observations:**
 
 Get **specified** observations updated since last run, and post to DW. This also depends on variables in `store/data.json`, including urlSuffix, which can be used to filter observations from iNaturalist API.
 
-    python3 inat.py staging manual true 10
+```bash
+python3 inat.py staging manual true 10
+```
 
 Example suffixes:
 
@@ -64,7 +76,54 @@ Example suffixes:
 Use iNaturalist API documentation to see what kind of parameters you can give: https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
 
 
-### How it works
+## Running in Docker container with data from Allas
+
+First copy `data.json` and private data to Allas, using `-ALLAS` suffixes.
+
+Then build and run the container, which will execute the ETL process, and exit:
+
+```bash
+docker build -t inat-etl .
+docker run --rm --env-file .env inat-etl
+```
+
+This will:
+1. Download data from Allas
+2. Run default command `python inat.py production auto true 5`
+3. Exit when finished
+
+### Run inat.py with custom parameters
+
+Override the default CMD to pass your own arguments:
+
+```bash
+docker run --rm --env-file .env inat-etl staging manual true 10
+```
+
+Arguments are: `<target> <mode> <full_logging> [sleep]`
+1. `target`: `staging` or `production`
+2. `mode`: `auto` or `manual`
+3. `full_logging`: `true` or `false`
+4. `sleep`: optional, seconds between requests (default 10)
+
+### Run single.py for debugging
+
+To run `single.py` for testing individual observations:
+
+```bash
+docker run --rm --env-file .env inat-etl single.py 194920696 dry
+```
+
+The entrypoint will detect that the first argument is a script name (ends with `.py`) and run that script instead of `inat.py`.
+
+### Notes
+
+- `--rm` flag removes the container after it exits (keeps things clean)
+- The container always downloads data from Allas first (even for single.py runs)
+- All code is baked into the image - no volume mounts needed
+- For live code editing during development, you can temporarily add a volume mount in docker-compose.yml
+
+## How the system works
 
 * inat.py
     * Get startup variables from `store/data.json`
@@ -78,7 +137,6 @@ Use iNaturalist API documentation to see what kind of parameters you can give: h
     * Posts all observations to FinBIF DW as a batch
 * inat.py
     * If success, sets vatiables to `store/data.json`
-
 
 ## Preparing private data
 
@@ -119,7 +177,6 @@ Use iNaturalist API documentation to see what kind of parameters you can give: h
 
 ### Should/Nice to have:
 
-- Monitor consistent failures on Rahti by Zabbix
 - Fix date created timezone
 - Monitor if iNat API changes (test observation)
 - Conversion: annotation key 17 (Alive or dead) once the valua can be handled by FinBIF DW ETL, the verify it works

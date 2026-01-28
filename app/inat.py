@@ -281,5 +281,4 @@ except Exception as e:
 logger.log_minimal("Uploading final state file to Allas...")
 upload_to_allas.upload_state_file(silent=False)
 
-logger.log_full("------------------------------------------------")
 

@@ -1,16 +1,7 @@
 # Testing Guide
 
-## Test OpenShift Behavior (CronJob simulation)
+The container runs, executes the ETL process, and exits.
 
-The container runs, executes the ETL process, and exits. This simulates how it will behave in OpenShift as a CronJob.
-
-### Using docker-compose:
-```bash
-docker-compose build
-docker-compose run --rm inat_etl
-```
-
-### Using docker directly:
 ```bash
 docker build -t inat-etl .
 docker run --rm --env-file .env inat-etl
@@ -18,20 +9,14 @@ docker run --rm --env-file .env inat-etl
 
 This will:
 1. Download data from Allas
-2. Run `python inat.py production auto true 5`
+2. Run default command `python inat.py production auto true 5`
 3. Exit when finished
-
-## Local Development
 
 ### Run inat.py with custom parameters
 
 Override the default CMD to pass your own arguments:
 
 ```bash
-# Using docker-compose
-docker-compose run --rm inat_etl staging manual true 10
-
-# Using docker directly
 docker run --rm --env-file .env inat-etl staging manual true 10
 ```
 
@@ -46,10 +31,6 @@ Arguments are: `<target> <mode> <full_logging> [sleep]`
 To run `single.py` for testing individual observations:
 
 ```bash
-# Using docker-compose
-docker-compose run --rm inat_etl single.py 194920696 dry
-
-# Using docker directly
 docker run --rm --env-file .env inat-etl single.py 194920696 dry
 ```
 

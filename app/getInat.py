@@ -74,8 +74,11 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
     boolean: Returns False when no more results.
   """
   page = 1
+  totalObservationsAvailable = None
+  totalObservationsProcessed = 0
 
   while True:
+    logger.log_minimal("-----")
     logger.log_full("Getting set number " + str(page) + " of " + str(pageLimit) + " latestObsId " + str(latestObsId) + " latestUpdateTime " + latestUpdateTime)
 
     # place_id filter: Finland, Åland & Finland EEZ
@@ -95,9 +98,16 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
 
     resultObservationCount = inatResponseDict["total_results"]
     logger.log_minimal("Received " + str(resultObservationCount) + " observations")
+    totalObservationsProcessed += resultObservationCount
+
+    if totalObservationsAvailable is None:
+      totalObservationsAvailable = resultObservationCount
 
     if resultObservationCount == 0:
+      logger.log_full("-----")
       logger.log_full("No more observations.")
+      logger.log_full("Total observations available on process start: " + str(totalObservationsAvailable))
+      logger.log_full("Total observations processed: " + str(totalObservationsProcessed))
       yield False
       break
     
