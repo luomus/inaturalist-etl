@@ -96,6 +96,25 @@ Or list pods, find the one for the run you care about, then:
 oc -n inaturalist-etl logs -f <pod-name>
 ```
 
+### 5. Review that a run succeeded
+
+1. **Jobs:** `oc -n inaturalist-etl get jobs`  
+   - `COMPLETIONS` should show `1/1` when the run finished successfully.  
+   - `SUCCESSFUL` column (if shown) or status in `oc get jobs -o wide` indicates completion.
+
+2. **Pods:** `oc -n inaturalist-etl get pods`  
+   - Pods from the CronJob have a name like `inaturalist-etl-28345678-xxxxx`.  
+   - Status `Completed` = run finished; `Error` or `CrashLoopBackOff` = run failed.
+
+3. **Logs:** Check the last lines of the run to confirm the ETL completed without errors:
+   ```bash
+   oc -n inaturalist-etl logs job/<job-name>
+   ```
+   Look for your usual “done” or “complete” messages and absence of tracebacks.
+
+4. **Details (if something failed):**  
+   `oc -n inaturalist-etl describe job <job-name>` and `oc -n inaturalist-etl describe pod <pod-name>` show events and exit reason.
+
 ---
 
 ## Run the ETL manually (one-off)

@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: inaturalist-etl
 spec:
-  schedule: "0 * * * *"
+  schedule: "*/10 * * * *"   # every 10 min (testing); use "0 * * * *" for hourly in production
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
