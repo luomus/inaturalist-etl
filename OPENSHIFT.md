@@ -17,8 +17,6 @@ oc login https://<openshift-api-url> --token=<your-token>
 oc project inaturalist-etl
 ```
 
-Get the login command and token from the OpenShift web UI (e.g. CSC Pouta / Rahti).
-
 ### 2. Create the env Secret from your `.env`
 
 Secrets hold credentials; the Job loads them as environment variables.
@@ -33,6 +31,32 @@ If the secret already exists and you need to update it (e.g. new tokens):
 oc -n inaturalist-etl delete secret inaturalist-etl-env
 oc -n inaturalist-etl create secret generic inaturalist-etl-env --from-env-file=.env
 ```
+
+---
+
+## Deploying a new version (after code changes)
+
+When you change the Python code and want that version running on OpenShift:
+
+1. **Test locally** (build and run with Docker so you use the same image flow as production):
+
+   ```bash
+   docker-compose build
+   docker-compose run --rm inat_etl
+   ```
+
+   Or with plain Docker:
+
+   ```bash
+   docker build -t inat-etl .
+   docker run --rm --env-file .env inat-etl
+   ```
+
+2. **Publish the new image**  
+   Commit and push to `main`. GitHub Actions builds and pushes `ghcr.io/luomus/inaturalist-etl:latest` to GHCR. Wait for the [Actions](https://github.com/luomus/inaturalist-etl/actions) workflow to succeed.
+
+3. **Run the new version on OpenShift**  
+   The Job uses `imagePullPolicy: Always` and tag `:latest`, so the next Job run will pull the updated image. No change to `job-manual.yml` needed.
 
 ---
 
