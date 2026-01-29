@@ -97,8 +97,8 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
       raise
 
     resultObservationCount = inatResponseDict["total_results"]
-    logger.log_minimal("Received " + str(resultObservationCount) + " observations")
-    totalObservationsProcessed += resultObservationCount
+    logger.log_minimal(str(resultObservationCount) + " observations remaining")
+    totalObservationsProcessed += len(inatResponseDict["results"])
 
     if totalObservationsAvailable is None:
       totalObservationsAvailable = resultObservationCount

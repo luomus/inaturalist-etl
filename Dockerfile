@@ -16,8 +16,9 @@ RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 COPY app/ /app/
 
 # Create writable runtime directories (OpenShift-friendly: arbitrary UID)
+# -R makes any copied files (e.g. store/data-MANUAL.json) writable by container user
 RUN mkdir -p /app/store /app/privatedata && \
-    chmod 0777 /app/store /app/privatedata && \
+    chmod -R 0777 /app/store /app/privatedata && \
     chmod +x /app/entrypoint.py
 
 # Run as non-root by default (OpenShift will still be able to override UID)

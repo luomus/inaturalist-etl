@@ -13,45 +13,44 @@ The scripts are containerized using Docker and can be executed either manually v
     * Add your Laji.fi API tokens to this file.
 * `cp app/store/data.example.json app/store/data.json`
 
-## Running scripts manually with Docker Compose
+## Running in OpenShift
 
-**Start Docker Compose:**
+See [OPENSHIFT.md](OPENSHIFT.md) for running in OpenShift.
 
-```bash
-docker-compose build
-docker-compose up; docker-compose down;
-```
+## Running in Docker container with data from Allas
 
-Then get a shell inside the container:
+First copy `data.json` and private data to Allas, using `-ALLAS` suffixes.
 
-```bash
-docker exec -ti inat_etl bash
-cd app
-```
-
-**Debug single observation:**
+Then build and run the container, which will execute the ETL process, and exit:
 
 ```bash
-python3 single.py 194920696 dry 
+docker build -t inat-etl .
+docker run --rm --env-file .env inat-etl
 ```
 
-**Update all:**
+This will:
+1. Download data from Allas
+2. Run default command `python inat.py production auto true 5`
+3. Exit when finished
 
-Get **all** observations updated since last run and post them to DW. Replace `staging` with `production` in order to push into production. This depends on variables in `store/data.json`. True/false defines if full detailed logs are printed. The number is sleep time in seconds between page requests, to avoid overloading the iNat API. This script runs until it has reached end of observations, or until it fails due to an error.
+### Run with custom parameters
+
+Override the default CMD to pass your own arguments.
 
 ```bash
-python3 inat.py staging auto true 5
+docker build -t inat-etl .
+docker run --rm --env-file .env inat-etl production manual true 5
 ```
 
-**Update filtered observations:**
+Arguments are: `<target> <mode> <full_logging> [sleep]`
+1. `target`: `staging` or `production`
+2. `mode`: `auto` or `manual`
+3. `full_logging`: `true` or `false`
+4. `sleep`: optional, seconds between requests (default 10)
 
-Get **specified** observations updated since last run, and post to DW. This also depends on variables in `store/data.json`, including urlSuffix, which can be used to filter observations from iNaturalist API.
+Manual update will use private data from Allas but local parameters from `store/data-MANUAL.json`. Use this file to set the parameters for the update. **Note: you need to build the container again if you change the parameters!**
 
-```bash
-python3 inat.py staging manual true 10
-```
-
-Example suffixes:
+Example suffixes below. Use iNaturalist API documentation to see what kind of parameters you can give: https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
 
 * `&` # for no filtering
 * `&captive=true`
@@ -73,39 +72,6 @@ Example suffixes:
 * `&rank=subspecies`
 * `&d1=2018-01-01&d2=2020-12-31` # observation dates
 
-Use iNaturalist API documentation to see what kind of parameters you can give: https://api.inaturalist.org/v1/docs/#!/Observations/get_observations
-
-
-## Running in Docker container with data from Allas
-
-First copy `data.json` and private data to Allas, using `-ALLAS` suffixes.
-
-Then build and run the container, which will execute the ETL process, and exit:
-
-```bash
-docker build -t inat-etl .
-docker run --rm --env-file .env inat-etl
-```
-
-This will:
-1. Download data from Allas
-2. Run default command `python inat.py production auto true 5`
-3. Exit when finished
-
-### Run inat.py with custom parameters
-
-Override the default CMD to pass your own arguments:
-
-```bash
-docker run --rm --env-file .env inat-etl staging manual true 10
-```
-
-Arguments are: `<target> <mode> <full_logging> [sleep]`
-1. `target`: `staging` or `production`
-2. `mode`: `auto` or `manual`
-3. `full_logging`: `true` or `false`
-4. `sleep`: optional, seconds between requests (default 10)
-
 ### Run single.py for debugging
 
 To run `single.py` for testing individual observations:
@@ -113,8 +79,13 @@ To run `single.py` for testing individual observations:
 ```bash
 docker run --rm --env-file .env inat-etl single.py 194920696 dry
 ```
-
 The entrypoint will detect that the first argument is a script name (ends with `.py`) and run that script instead of `inat.py`.
+
+Arguments are: `<script> <observation_id> <target> <mode>`
+1. `script`: `single.py`
+2. `observation_id`: ID of the observation to test
+3. `target`: `staging` or `production`
+4. `mode`: `dry` or `dry-verbose`
 
 ### Notes
 

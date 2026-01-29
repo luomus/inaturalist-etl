@@ -14,6 +14,9 @@ import upload_to_allas
 
 import pandas
 
+ALLAS_STATE_FILE = './store/data-ALLAS.json'
+MANUAL_STATE_FILE = './store/data-MANUAL.json'
+
 def subtract_minutes(datetime_str, minutes_to_subtract):
     """Subtract minutes from a datetime string.
 
@@ -50,17 +53,18 @@ def printObject(object):
   print(object.__dict__)
 
 
-def set_variable(var_name, var_value):
-    """Set a variable in the data store and upload to Allas.
+def set_variable(var_name, var_value, file_path=ALLAS_STATE_FILE, upload_to_allas_enabled=True):
+    """Set a variable in the data store (optionally upload to Allas).
 
     Args:
         var_name (string): Name of the variable
         var_value: Value to store
+        file_path (string): JSON file path to read/write
+        upload_to_allas_enabled (bool): If True, sync the JSON file to Allas
 
     Raises:
         Exception: If file operations fail
     """
-    file_path = './store/data-ALLAS.json'
 
     try:
         # Read existing data from the file
@@ -77,16 +81,18 @@ def set_variable(var_name, var_value):
         with open(file_path, 'w') as file:
             json.dump(data, file, indent=4)
         
-        # Upload to Allas after each write (real-time sync)
-        upload_to_allas.upload_state_file(file_path, silent=True)
-
-        logger.log_minimal(f"Updated variable {var_name} as {var_value} to Allas")
+        if upload_to_allas_enabled:
+            # Upload to Allas after each write (real-time sync)
+            upload_to_allas.upload_state_file(file_path, silent=True)
+            logger.log_minimal(f"Updated variable {var_name} as {var_value} and synced to Allas")
+        else:
+            logger.log_minimal(f"Updated variable {var_name} as {var_value} (local only)")
     except Exception as e:
-        logger.log_minimal(f"Failed to update variable {var_name} as {var_value} to Allas")
-        raise Exception(f"Failed to update data store and upload to Allas: {str(e)}")
+        logger.log_minimal(f"Failed to update variable {var_name} as {var_value}")
+        raise Exception(f"Failed to update data store: {str(e)}")
 
 
-def read_variables():
+def read_variables(file_path=ALLAS_STATE_FILE):
     """Read variables from the data store.
 
     Raises:
@@ -95,19 +101,17 @@ def read_variables():
     Returns:
         dict: Stored variables
     """
-    file_path = './store/data-ALLAS.json'
-
     try:
         if os.path.exists(file_path):
             with open(file_path, 'r') as file:
                 variables = json.load(file)
-                logger.log_minimal(f"Read variables from Allas: {variables}")
+                logger.log_minimal(f"Read variables from {file_path}: {variables}")
                 return variables
         else:
-            logger.log_minimal("No state file found, starting with empty variables")
+            logger.log_minimal(f"No state file found at {file_path}, starting with empty variables")
             return {}
     except Exception as e:
-        raise Exception(f"Failed to read from Allas data store: {str(e)}")
+        raise Exception(f"Failed to read from data store {file_path}: {str(e)}")
 
 
 ### SETUP
@@ -123,6 +127,10 @@ if sys.argv[3].lower() == 'false':
     full_logging_on = False
 else:
     full_logging_on = True
+
+# Only auto mode syncs state to/from Allas. Manual mode is local-only.
+sync_to_allas = (mode == "auto")
+state_file = ALLAS_STATE_FILE if sync_to_allas else MANUAL_STATE_FILE
 
 # Optional command line arguments
 # Sleep between requests, default 10 seconds
@@ -150,6 +158,7 @@ logger.log_minimal("Target " + str(target))
 logger.log_minimal("Mode " + str(mode))
 logger.log_minimal("Full logging " + str(full_logging_on))
 logger.log_minimal("Sleep between iNat requests " + str(sleep))
+logger.log_minimal("State file " + str(state_file))
 
 # Load private data
 try:
@@ -174,24 +183,38 @@ logger.log_full("------------------------------------------------")
 # Setup signal handlers to upload state file on termination
 def signal_handler(signum, frame):
     """Handle termination signals by uploading state file before exit."""
-    logger.log_minimal(f"Received signal {signum}, uploading state file to Allas...")
-    upload_to_allas.upload_state_file(silent=False)
+    if sync_to_allas:
+        logger.log_minimal(f"Received signal {signum}, uploading state file to Allas...")
+        upload_to_allas.upload_state_file(state_file, silent=False)
     sys.exit(1)
 
-# Register signal handlers for graceful shutdown
-signal.signal(signal.SIGTERM, signal_handler)
-signal.signal(signal.SIGINT, signal_handler)
+# Register signal handlers / atexit upload only for auto mode (Allas sync)
+if sync_to_allas:
+    # Register signal handlers for graceful shutdown
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
 
-# Register atexit handler to upload on normal exit
-def upload_on_exit():
-    """Upload state file when script exits normally."""
-    upload_to_allas.upload_state_file(silent=True)
+    # Register atexit handler to upload on normal exit
+    def upload_on_exit():
+        """Upload state file when script exits normally."""
+        upload_to_allas.upload_state_file(state_file, silent=True)
 
-atexit.register(upload_on_exit)
+    atexit.register(upload_on_exit)
+
+# In manual mode, require the local state file to exist (do not default to empty)
+if mode == "manual" and not os.path.exists(state_file):
+    raise ValueError(
+        f"Manual mode requires {state_file} to exist. "
+        f"Create the file (e.g. in ./store/data-MANUAL.json) with keys such as "
+        f"'inat_MANUAL_urlSuffix', 'inat_MANUAL_production_latest_obsId', "
+        f"'inat_MANUAL_production_latest_update', etc. "
+        f"When running in Docker, mount the host store dir so the file is available: "
+        f"e.g. docker run ... -v ./store:/app/store ..."
+    )
 
 # Get latest update data
 try:
-    variables = read_variables()
+    variables = read_variables(state_file)
 except Exception as e:
     raise Exception(f"Failed to read variables: {str(e)}")
 
@@ -229,7 +252,10 @@ latest_obs_id = variables.get(variableName_latest_obsId, 0)
 latest_update = variables.get(variableName_latest_update, "")
 
 if not latest_update:
-    raise ValueError(f"Missing latest update time for {mode} mode")
+    raise ValueError(
+        f"Missing latest update time for {mode} mode. "
+        f"Expected key '{variableName_latest_update}' in {state_file}"
+    )
 
 # Reduce minutes from datetime. This is done because observations can appear on the API with delay of few minutes, which would cause them not to be processed. 
 try:
@@ -246,9 +272,9 @@ try:
     for multiObservationDict in getInat.getUpdatedGenerator(latest_obs_id, latest_update, **props):
         # If no more observations on page, finish the process by saving update time and resetting observation id to zero.
         if multiObservationDict is False:
-            set_variable(variableName_latest_update, thisUpdateTime)
-            set_variable(variableName_latest_obsId, 0)
-            set_variable(variableName_status, "finished")
+            set_variable(variableName_latest_update, thisUpdateTime, file_path=state_file, upload_to_allas_enabled=sync_to_allas)
+            set_variable(variableName_latest_obsId, 0, file_path=state_file, upload_to_allas_enabled=sync_to_allas)
+            set_variable(variableName_status, "finished", file_path=state_file, upload_to_allas_enabled=sync_to_allas)
             logger.log_minimal("Finished, latest update set to " + thisUpdateTime)
             break
 
@@ -260,8 +286,8 @@ try:
 
         # If this pageful contained data, and was saved successfully to DW, set latestObsId as variable
         if postSuccess:
-            set_variable(variableName_latest_obsId, latestObsId)
-            set_variable(variableName_status, "ongoing")
+            set_variable(variableName_latest_obsId, latestObsId, file_path=state_file, upload_to_allas_enabled=sync_to_allas)
+            set_variable(variableName_status, "ongoing", file_path=state_file, upload_to_allas_enabled=sync_to_allas)
 
         if page < props["pageLimit"]:
             page = page + 1
@@ -271,14 +297,16 @@ try:
 
 except Exception as e:
     logger.log_minimal(f"Error during processing: {str(e)}")
-    # Upload state file before exiting on error
-    logger.log_minimal("Uploading state file to Allas before exit...")
-    upload_to_allas.upload_state_file(silent=False)
+    if sync_to_allas:
+        # Upload state file before exiting on error
+        logger.log_minimal("Uploading state file to Allas before exit...")
+        upload_to_allas.upload_state_file(state_file, silent=False)
     # Don't re-raise the exception, just exit with error code
     sys.exit(1)
 
-# Upload state file on successful completion
-logger.log_minimal("Uploading final state file to Allas...")
-upload_to_allas.upload_state_file(silent=False)
+if sync_to_allas:
+    # Upload state file on successful completion
+    logger.log_minimal("Uploading final state file to Allas...")
+    upload_to_allas.upload_state_file(state_file, silent=False)
 
 

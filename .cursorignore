@@ -1,10 +1,6 @@
 **/privatedata/**
-**/store/**
-
 
 secret_data.py
-app/privatedata/*
-app/store/data.json*
 
 latest.tsv
 latest-ALLAS.tsv

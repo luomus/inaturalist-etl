@@ -7,5 +7,9 @@
     "inat_MANUAL_staging_latest_obsId": 0,
     "inat_MANUAL_staging_latest_update": "2023-12-27T14%3A35%3A03%2B00%3A00",
     "inat_MANUAL_production_latest_obsId": 0,
-    "inat_MANUAL_production_latest_update": "2023-12-27T11%3A45%3A44%2B00%3A00"
+    "inat_MANUAL_production_latest_update": "2023-12-27T11%3A45%3A44%2B00%3A00",
+    "inat_auto_production_status": "finished",
+    "inat_auto_staging_status": "ongoing",
+    "inat_MANUAL_production_status": "finished",
+    "inat_MANUAL_staging_status": "ongoing"
 }
