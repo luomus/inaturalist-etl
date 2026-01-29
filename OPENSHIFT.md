@@ -51,8 +51,6 @@ GitHub Actions builds and pushes `ghcr.io/luomus/inaturalist-etl:latest` to GHCR
 
 The Job uses `imagePullPolicy: Always` and tag `:latest`, so the next Job run will pull the updated image. No change to `job-manual.yml` or `cronjob.yml` needed.
 
----
-
 ## Automatic run (CronJob)
 
 Deploy the CronJob so the ETL runs as defined in `cronjob.yml`.
@@ -79,11 +77,6 @@ Or list pods, find the one for the run you care about, then:
 
 ```bash
 oc -n inaturalist-etl logs -f <pod-name>
-```
-
-Check the last lines of the run to confirm the ETL completed without errors:
-```bash
-oc -n inaturalist-etl logs job/<job-name>
 ```
 
 Details (if something failed):

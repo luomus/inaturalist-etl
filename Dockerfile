@@ -3,6 +3,12 @@ FROM python:3.11-slim-bookworm
 # Allow statements and log messages to immediately appear in the logs
 ENV PYTHONUNBUFFERED True
 
+# Version info injected at build time (e.g. by CI); default when building locally without --build-arg
+ARG GIT_SHA=unknown
+ARG BUILD_DATE=unknown
+ENV APP_GIT_SHA=$GIT_SHA
+ENV APP_BUILD_DATE=$BUILD_DATE
+
 RUN apt update && \
     apt -y upgrade && \
     apt clean && \

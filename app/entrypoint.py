@@ -25,6 +25,11 @@ def ensure_writable_directories():
 
 def main():
     """Main entrypoint function."""
+    # Log version (git SHA + build date) so OpenShift logs show which image is running
+    git_sha = os.environ.get('APP_GIT_SHA', 'unknown')
+    build_date = os.environ.get('APP_BUILD_DATE', 'unknown')
+    print(f"iNaturalist ETL version: {git_sha} (built {build_date})")
+
     # Ensure writable directories exist
     ensure_writable_directories()
     

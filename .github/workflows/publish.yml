@@ -19,6 +19,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set build version env
+        run: |
+          echo "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
+
       - name: Extract metadata (tags, labels) for image
         id: meta
         uses: docker/metadata-action@v5
@@ -36,6 +40,9 @@ jobs:
           oci: true
           containerfiles: |
             ./Dockerfile
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            BUILD_DATE=${{ env.BUILD_DATE }}
 
       - name: Push to GHCR
         uses: redhat-actions/push-to-registry@v2
