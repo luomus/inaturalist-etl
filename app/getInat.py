@@ -109,7 +109,7 @@ def getUpdatedGenerator(latestObsId, latestUpdateTime, pageLimit, perPage, sleep
       logger.log_full("No more observations.")
       git_sha = os.environ.get('APP_GIT_SHA', 'unknown')
       build_date = os.environ.get('APP_BUILD_DATE', 'unknown')
-      logger.log_full(f"iNaturalist ETL version: {git_sha} (built {build_date})")
+      logger.log_full(f"iNaturalist ETL version: {git_sha} (built {build_date} UTC)")
       logger.log_full("Total observations available on process start: " + str(totalObservationsAvailable))
       logger.log_full("Total observations processed: " + str(totalObservationsProcessed))
       yield False
