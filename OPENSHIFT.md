@@ -43,13 +43,15 @@ See README.md for testing locally.
 
 **Publish the new image**  
 
-Commit and push to `main`.
+1. Commit and push to `main`.
+2. GitHub Actions builds and pushes `ghcr.io/luomus/inaturalist-etl:latest` to GHCR. Wait for the [Actions](https://github.com/luomus/inaturalist-etl/actions) workflow to succeed.
+3. Run the new version on OpenShift: the CronJob uses `imagePullPolicy: IfNotPresent`, so it will not pull again until the image is refreshed. After the Action has completed, run once (with `oc` logged in and project selected):
 
-GitHub Actions builds and pushes `ghcr.io/luomus/inaturalist-etl:latest` to GHCR. Wait for the [Actions](https://github.com/luomus/inaturalist-etl/actions) workflow to succeed.
+   ```bash
+   oc delete job inaturalist-etl-manual --ignore-not-found && oc create -f job-manual.yml
+   ```
 
-**Run the new version on OpenShift**  
-
-The Job uses `imagePullPolicy: Always` and tag `:latest`, so the next Job run will pull the updated image. No change to `job-manual.yml` or `cronjob.yml` needed.
+   That run pulls the new image and caches it; the next CronJob run will use the new version. No need to edit any file or update any tag.
 
 ## Automatic run (CronJob)
 

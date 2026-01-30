@@ -14,7 +14,7 @@ spec:
           containers:
           - name: inaturalist-etl
             image: ghcr.io/luomus/inaturalist-etl:latest
-            imagePullPolicy: Always
+            imagePullPolicy: IfNotPresent
             envFrom:
             - secretRef:
                 name: inaturalist-etl-env
