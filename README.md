@@ -137,6 +137,14 @@ Arguments are: `<script> <observation_id> <target> <mode>`
     - Solution: Twice per year, check all occurrences against Finnish data dump. If observation is not found, it's deleted or moved outside Finland -> Delete from DW.
     - Problem: the data dump does not contain observations submitted after the data dump has been created.
 
+### Security:
+
+- Add explicit HTTP timeouts (and keep existing retry/backoff behavior).
+- Reduce writable permissions (0775/group-writable) if your platform constraints allow.
+- Constrain/validate env-configured endpoints/paths to expected values/prefixes.
+- Maybe: improve release reproducibility (lock deps, pin action SHAs, immutable image tags).
+
+
 ### Should/Nice to have:
 
 - Fix date created timezone

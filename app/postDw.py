@@ -1,5 +1,4 @@
 import requests
-import sys
 import os
 import logger
 
@@ -28,6 +27,24 @@ def get_token(target):
     else:
         raise ValueError(f"Invalid target environment: {target}")
 
+
+def get_request_config(target):
+    """Build FinBIF API request URL and headers for the target environment."""
+    if target == "staging":
+        target_url = "https://apitest.laji.fi/warehouse/push"
+    elif target == "production":
+        target_url = "https://api.laji.fi/warehouse/push"
+    else:
+        raise ValueError(f"Invalid target environment: {target}")
+
+    token = get_token(target)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "API-Version": "1",
+    }
+    return target_url, headers
+
+
 def postSingle(dwObs, target):
     """Post a single observation to FinBIF DW API.
 
@@ -42,17 +59,11 @@ def postSingle(dwObs, target):
     Returns:
         bool: True if successful
     """
-    if target == "staging":
-        logger.log_full("Pushing to staging API")
-        targetUrl = "https://apitest.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
-    elif target == "production":
-        logger.log_full("Pushing to production API")
-        targetUrl = "https://api.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
-    else:
-        raise ValueError(f"Invalid target environment: {target}")
+    targetUrl, headers = get_request_config(target)
+    logger.log_full(f"Pushing to {target} API")
 
     logger.log_full("Pushing to " + targetUrl)
-    targetResponse = requests.post(url=targetUrl, json=dwObs)
+    targetResponse = requests.post(url=targetUrl, json=dwObs, headers=headers)
 
     if targetResponse.status_code == 200:
         logger.log_full("DW API responded " + str(targetResponse.status_code))
@@ -76,17 +87,11 @@ def postMulti(dwObs, target):
     Returns:
         bool: True if successful
     """
-    if target == "staging":
-        logger.log_full("Pushing to staging API")
-        targetUrl = "https://apitest.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
-    elif target == "production":
-        logger.log_full("Pushing to production API")
-        targetUrl = "https://api.laji.fi/v0/warehouse/push?access_token=" + get_token(target)
-    else:
-        raise ValueError(f"Invalid target environment: {target}")
+    targetUrl, headers = get_request_config(target)
+    logger.log_full(f"Pushing to {target} API")
 
     logger.log_full("Pushing to " + targetUrl)
-    targetResponse = requests.post(url=targetUrl, json=dwObs)
+    targetResponse = requests.post(url=targetUrl, json=dwObs, headers=headers)
 
     if targetResponse.status_code == 200:
         logger.log_full("API responded " + str(targetResponse.status_code))

@@ -13,7 +13,7 @@ if not token:
     sys.exit(1)
 
 # Define the API endpoint
-url = f"https://api.laji.fi/v0/warehouse/push?access_token={token}"
+url = "https://api.laji.fi/warehouse/push"
 
 # Read IDs from CSV file (skip header row)
 ids_file_path = os.path.join(base_dir, 'privatedata', 'ids_to_be_deleted.csv')
@@ -30,7 +30,9 @@ if not identifiers:
 payload = "\n".join(identifiers)
 
 headers = {
-    "Content-Type": "text/plain"
+    "Content-Type": "text/plain",
+    "Authorization": f"Bearer {token}",
+    "API-Version": "1",
 }
 
 try:
