@@ -33,21 +33,11 @@ def main():
     # Ensure writable directories exist
     ensure_writable_directories()
     
-    # Download data from Allas
-    print("Downloading data from Allas...")
-    try:
-        import download_from_allas
-        download_from_allas.download_from_allas()
-        print("Data download complete.")
-    except Exception as e:
-        print(f"Error downloading data from Allas: {str(e)}", file=sys.stderr)
-        sys.exit(1)
-    
     # Get command arguments
     if len(sys.argv) > 1:
         # Arguments provided via CMD
         cmd_args = sys.argv[1:]
-        
+
         # If first argument is a script name (e.g., "single.py"), run that script directly
         if cmd_args[0].endswith('.py'):
             script_name = cmd_args[0]
@@ -63,7 +53,20 @@ def main():
     else:
         # No arguments - use production update parameters
         cmd_args = ['production', 'auto', 'true', '5']
-    
+
+    # In manual mode, do not fetch data-ALLAS.json. inat.py uses local data-MANUAL.json.
+    is_manual_mode = len(cmd_args) > 1 and cmd_args[1] == 'manual'
+
+    # Download data from Allas
+    print("Downloading data from Allas...")
+    try:
+        import download_from_allas
+        download_from_allas.download_from_allas(skip_state_file=is_manual_mode)
+        print("Data download complete.")
+    except Exception as e:
+        print(f"Error downloading data from Allas: {str(e)}", file=sys.stderr)
+        sys.exit(1)
+
     # Execute inat.py with the arguments
     print(f"Executing inat.py with arguments: {' '.join(cmd_args)}")
     try:

@@ -39,7 +39,7 @@ filtered_selected_df_replaced = filtered_selected_df.replace(to_replace=';', val
 print("Replacements done")
 
 # Save as TSV file
-output_file_path = '../privatedata/latest.tsv'
+output_file_path = '../privatedata/latest-ALLAS.tsv'
 filtered_selected_df_replaced.to_csv(output_file_path, sep='	', index=False)
 
 print(f"All done, file saved as {output_file_path}")

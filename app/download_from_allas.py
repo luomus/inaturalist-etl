@@ -31,8 +31,12 @@ def download_file(s3_client, bucket, object_key, local_path):
         print(f"Error: Unexpected error during download: {str(e)}", file=sys.stderr)
         return False
 
-def download_from_allas():
-    """Download data files from Allas S3 storage."""
+def download_from_allas(skip_state_file=False):
+    """Download data files from Allas S3 storage.
+
+    Args:
+        skip_state_file (bool): If True, do not download ALLAS JSON state file.
+    """
     
     # Get configuration from environment variables
     allas_endpoint = os.getenv('ALLAS_ENDPOINT')
@@ -62,9 +66,10 @@ def download_from_allas():
         'LOCAL_DATA_PATH': local_file_path_1,
         'ALLAS_OBJECT_KEY_2': allas_object_key_2,
         'LOCAL_DATA_PATH_2': local_file_path_2,
-        'ALLAS_OBJECT_KEY_3': allas_object_key_3,
-        'LOCAL_DATA_PATH_3': local_file_path_3,
     }
+    if not skip_state_file:
+        required_vars['ALLAS_OBJECT_KEY_3'] = allas_object_key_3
+        required_vars['LOCAL_DATA_PATH_3'] = local_file_path_3
     
     missing_vars = [var for var, value in required_vars.items() if not value]
     if missing_vars:
@@ -74,8 +79,10 @@ def download_from_allas():
     # Create local directory if it doesn't exist
     local_dir_1 = os.path.dirname(local_file_path_1)
     local_dir_2 = os.path.dirname(local_file_path_2)
-    local_dir_3 = os.path.dirname(local_file_path_3)
-    for local_dir in [local_dir_1, local_dir_2, local_dir_3]:
+    local_dirs = [local_dir_1, local_dir_2]
+    if not skip_state_file:
+        local_dirs.append(os.path.dirname(local_file_path_3))
+    for local_dir in local_dirs:
         if local_dir and not os.path.exists(local_dir):
             os.makedirs(local_dir, exist_ok=True)
             print(f"Created directory: {local_dir}")
@@ -92,11 +99,14 @@ def download_from_allas():
         print(f"Error: Failed to initialize S3 client: {str(e)}", file=sys.stderr)
         sys.exit(1)
     
-    # Download all three files
+    # Download required files
     success = True
     success = download_file(s3_client, allas_bucket, allas_object_key_1, local_file_path_1) and success
     success = download_file(s3_client, allas_bucket, allas_object_key_2, local_file_path_2) and success
-    success = download_file(s3_client, allas_bucket, allas_object_key_3, local_file_path_3) and success
+    if skip_state_file:
+        print("Skipping ALLAS state file download (manual mode uses local data-MANUAL.json).")
+    else:
+        success = download_file(s3_client, allas_bucket, allas_object_key_3, local_file_path_3) and success
     
     if not success:
         print("Error: One or more files failed to download", file=sys.stderr)
