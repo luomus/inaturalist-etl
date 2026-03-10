@@ -1,8 +1,8 @@
 # iNaturalist to FinBIF ETL Process
 
-This repository contains a set of Python scripts designed to facilitate an ETL (Extract-Transform-Load) process for synchronizing biodiversity occurrence records from iNaturalist to the Finnish Biodiversity Information Facility (FinBIF) data warehouse. The scripts retrieve data from the iNaturalist open REST API, transform it into the FinBIF-compatible format, and then submit the processed records to the FinBIF REST API. Once submitted, the data is made available on the FinBIF portal at Laji.fi. Additionally, the data is stored in a private data warehouse for restricted access by Finnish public authorities, enriched with private location coordinates from iNaturalist's annual data exports.
+This repository contains a set of Python scripts for an ETL (Extract-Transform-Load) process for synchronizing biodiversity occurrence records from iNaturalist to the Finnish Biodiversity Information Facility (FinBIF) data warehouse. The scripts retrieve data from the iNaturalist open REST API, transform it into the FinBIF-compatible format, and then submit the processed records to the FinBIF REST API. Once submitted, the data will become available on the FinBIF portal at Laji.fi. Additionally, a restricted version of the data is stored in a private data warehouse for access by Finnish public authorities.
 
-The scripts are containerized using Docker and can be executed either manually via the command line or automatically using a cron-based scheduler. The process tracks the last synchronization timestamp and ensures that only records updated or created after that time are synced. It also supports partial synchronization, allowing users to focus on specific subsets of data, such as captive/cultivated observations or obscured records. Currently, deletions are not handled, as iNaturalist's API does not provide deletion information.
+The scripts are containerized using Docker and can be executed either manually via the command line or automatically using a cron-based scheduler. The process tracks the last synchronization timestamp and ensures that only records updated or created after that time are synced. It also supports partial synchronization, allowing update of specific subsets of data, such as captive/cultivated observations or obscured records. Currently, deletions are not handled, as iNaturalist's API does not provide deletion information.
 
 ## Local setup
 
@@ -154,3 +154,15 @@ Arguments are: `<script> <observation_id> <target> <mode>`
 - Conversion: Remove spaces, special chars etc. from fact names, esp. when handling observation fields
 - Conversion: See todo's from conversion script
 - Have iconic taxon icon data on DW, once ETL can handle it, so resolve homonyms.
+
+### Testing, maybe:
+
+- Add a unique run_id to every ETL run (timestamp + commit hash) and include it in all logs.
+- Log core counts per run: extracted, transformed, sent, skipped, and HTTP status totals.
+- Store FinBIF response metadata (request/job IDs, if available) for later tracing.
+- Add simple sanity thresholds for failures and volume anomalies (too low/high vs normal runs).
+- Because ingest is async, run a delayed check (e.g. 1-3h later) for a sample of sent records.
+- Measure sample visibility rate in FinBIF/Laji and fail/warn when below your threshold.
+- Keep a tiny “golden sample” dataset to re-check after mapping/transform changes.
+- Use a fixed 5-minute post-release checklist (run health, counts, errors, delayed visibility, spot-check portal).
+- Alert only on high-signal issues (crashes, auth/5xx repeats, sustained visibility drop), and tune thresholds after a few weeks.

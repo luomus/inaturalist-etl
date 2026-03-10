@@ -11,7 +11,7 @@ This project runs on **CSC OpenShift**. The ETL runs at set interval via a CronJ
 
 **Log in and select project**
 
-You can get the login command and token from the OpenShift web UI at https://console.rahti.csc.fi/project-details/ns/inaturalist-etl, selecting username > Copy login command.
+You can get the login command and token from the OpenShift web UI at https://console.rahti.csc.fi/, selecting username > Copy login command.
 
 ```bash
 oc login https://<openshift-api-url> --token=<your-token>
