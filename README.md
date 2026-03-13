@@ -32,9 +32,9 @@ See [OPENSHIFT.md](OPENSHIFT.md) for how to set this up in CSC OpenShift.
 
 ## Setting up private data
 
-First copy `./app/store/data.json` to Allas, using `-ALLAS` suffix. This file will act as a database to track synchronization state.
+When making a fresh setup, first upload `./app/store/data.json` to Allas, using `-ALLAS` suffix. This file will act as a database to track synchronization state.
 
-Also copy iNaturalist private data to Allas:
+Also upload iNaturalist private data to Allas:
 
 * `inaturalist-suomi-20-users-ALLAS.csv` - user data from iNat data dump as it its, with -ALLAS suffix
 * `latest-ALLAS.tsv` - latest observation data from iNat data dump converted to a simplified format.

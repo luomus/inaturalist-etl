@@ -11,6 +11,7 @@ latest.tsv
 latest-ALLAS.tsv
 inaturalist-suomi-20*
 
+test.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
