@@ -501,7 +501,7 @@ def convertObservations(inatObservations, privateObservationData, private_emails
 
 
     # Annotations
-    if inat['annotations']:
+    if 'annotations' in inat and inat['annotations']:
       keywords.append("has_annotations")
 
       for nro, annotation in enumerate(inat['annotations']):
@@ -523,6 +523,9 @@ def convertObservations(inatObservations, privateObservationData, private_emails
           unit['sex'] = value
         elif "dead" == key:
           unit['dead'] = value
+    elif 'annotations' not in inat:
+      # 2026-04-13: iNat data can now miss the annotations key
+      print(f"No annotations on {inat['id']}")
         
 
     # Quality metrics

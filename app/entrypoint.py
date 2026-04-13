@@ -37,22 +37,14 @@ def main():
     if len(sys.argv) > 1:
         # Arguments provided via CMD
         cmd_args = sys.argv[1:]
-
-        # If first argument is a script name (e.g., "single.py"), run that script directly
-        if cmd_args[0].endswith('.py'):
-            script_name = cmd_args[0]
-            script_args = cmd_args[1:]
-            print(f"Executing {script_name} with arguments: {' '.join(script_args)}")
-            result = subprocess.run(
-                [sys.executable, script_name] + script_args,
-                cwd='/app',
-                check=False
-            )
-            sys.exit(result.returncode)
-        # Otherwise, treat as arguments for inat.py (cmd_args already set)
     else:
         # No arguments - use production update parameters
         cmd_args = ['production', 'auto', 'true', '5']
+
+    # If first argument is a script name (e.g., "single.py"), run that script after download.
+    is_script_run = len(cmd_args) > 0 and cmd_args[0].endswith('.py')
+    script_name = cmd_args[0] if is_script_run else None
+    script_args = cmd_args[1:] if is_script_run else []
 
     # In manual mode, do not fetch data-ALLAS.json. inat.py uses local data-MANUAL.json.
     is_manual_mode = len(cmd_args) > 1 and cmd_args[1] == 'manual'
@@ -66,6 +58,15 @@ def main():
     except Exception as e:
         print(f"Error downloading data from Allas: {str(e)}", file=sys.stderr)
         sys.exit(1)
+
+    if is_script_run:
+        print(f"Executing {script_name} with arguments: {' '.join(script_args)}")
+        result = subprocess.run(
+            [sys.executable, script_name] + script_args,
+            cwd='/app',
+            check=False
+        )
+        sys.exit(result.returncode)
 
     # Execute inat.py with the arguments
     print(f"Executing inat.py with arguments: {' '.join(cmd_args)}")
