@@ -24,15 +24,15 @@ def _get_s3_client():
     allas_endpoint = os.getenv('ALLAS_ENDPOINT')
     allas_access_key = os.getenv('ALLAS_ACCESS_KEY')
     allas_secret_key = os.getenv('ALLAS_SECRET_KEY')
-    allas_bucket = os.getenv('ALLAS_BUCKET')
+    allas_state_bucket = os.getenv('ALLAS_STATE_BUCKET')
     allas_object_key_3 = os.getenv('ALLAS_OBJECT_KEY_3')
     
-    if not all([allas_endpoint, allas_access_key, allas_secret_key, allas_bucket, allas_object_key_3]):
+    if not all([allas_endpoint, allas_access_key, allas_secret_key, allas_state_bucket, allas_object_key_3]):
         raise ValueError("Missing required Allas configuration for upload. Check environment variables.")
     
     # Store config for later use
     _upload_config = {
-        'bucket': allas_bucket,
+        'bucket': allas_state_bucket,
         'object_key': allas_object_key_3,
     }
     

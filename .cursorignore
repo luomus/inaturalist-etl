@@ -1,6 +1,7 @@
 **/privatedata/**
 app/store/**
 **/examples/**
+.env
 
 secret_data.py
 

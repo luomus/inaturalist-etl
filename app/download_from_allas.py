@@ -43,6 +43,7 @@ def download_from_allas(skip_state_file=False):
     allas_access_key = os.getenv('ALLAS_ACCESS_KEY')
     allas_secret_key = os.getenv('ALLAS_SECRET_KEY')
     allas_bucket = os.getenv('ALLAS_BUCKET')
+    allas_state_bucket = os.getenv('ALLAS_STATE_BUCKET')
     
     # File 1: Email data
     allas_object_key_1 = os.getenv('ALLAS_OBJECT_KEY')
@@ -68,6 +69,7 @@ def download_from_allas(skip_state_file=False):
         'LOCAL_DATA_PATH_2': local_file_path_2,
     }
     if not skip_state_file:
+        required_vars['ALLAS_STATE_BUCKET'] = allas_state_bucket
         required_vars['ALLAS_OBJECT_KEY_3'] = allas_object_key_3
         required_vars['LOCAL_DATA_PATH_3'] = local_file_path_3
     
@@ -106,7 +108,7 @@ def download_from_allas(skip_state_file=False):
     if skip_state_file:
         print("Skipping ALLAS state file download (manual mode uses local data-MANUAL.json).")
     else:
-        success = download_file(s3_client, allas_bucket, allas_object_key_3, local_file_path_3) and success
+        success = download_file(s3_client, allas_state_bucket, allas_object_key_3, local_file_path_3) and success
     
     if not success:
         print("Error: One or more files failed to download", file=sys.stderr)
